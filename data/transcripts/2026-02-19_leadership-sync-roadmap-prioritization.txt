@@ -1,0 +1,16 @@
+[00:00:04] Todd: Quick one, I know you've got the clinical advisory prep to get to. Q2 resourcing.
+[00:00:12] Dhruvisha: Go ahead.
+[00:00:14] Todd: BrightPath wants white-label pricing and a rough timeline. I don't have engineering hours to promise them yet.
+[00:00:25] Dhruvisha: Riverside's pilot is targeting Q2 too, and that one's contracted, sort of, pending the data-sharing review. BrightPath is still just a conversation.
+[00:00:40] Todd: Right, nothing signed on the BrightPath side.
+[00:00:44] Dhruvisha: Then I think we prioritize Riverside pilot-readiness for Q2, full stop, and push white-label work to Q3.
+[00:00:56] Todd: That's going to disappoint Monica and Derek a little. They were hoping for a Q4 start already, and pushing our own timeline back doesn't help that.
+[00:01:10] Dhruvisha: It's a real commitment versus a hopeful one. If the pilot goes sideways because we split focus, we lose Riverside and probably our best reference customer for the next insurer conversation too.
+[00:01:26] Todd: When you put it that way, agreed. Riverside first, BrightPath white-label in Q3.
+[00:01:35] Dhruvisha: I'll let BrightPath know the realistic timeline myself, since I own that relationship end to end anyway.
+[00:01:44] Todd: Appreciated, saves me an awkward call.
+[00:01:48] Dhruvisha: Can you and Marcus huddle this afternoon on which engineers actually move onto pilot-readiness work? I want names, not just a percentage.
+[00:02:02] Todd: I'll grab him after this.
+[00:02:05] Dhruvisha: Good. Anything else?
+[00:02:08] Todd: That's it from me.
+[00:02:11] Dhruvisha: Great, talk later.

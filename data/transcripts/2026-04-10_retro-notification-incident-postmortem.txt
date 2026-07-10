@@ -1,0 +1,37 @@
+[00:00:05] Marcus: Let's get into it. Wednesday night, seven Riverside patients got a tier two push notification they shouldn't have gotten. Walk us through it, Sam.
+[00:00:18] Sam: Right. Short version — a deploy went out Wednesday evening for an unrelated frontend fix, and it accidentally shipped with a staging feature flag still pointed at the tier two path for a test cohort.
+[00:00:36] Priya: So real patients got routed through what was meant to be an internal test trigger.
+[00:00:44] Sam: Exactly. Seven patients got the "contact your care team now" push despite nothing actually being wrong with their heart rate data.
+[00:00:56] Dr. Vasquez: I need to say clearly — even though nothing was medically wrong, this is a serious incident. That's exactly the alarm fatigue and trust problem we spent hours designing around.
+[00:01:12] Dhruvisha: Agreed, and it's why you're in this meeting even though this reads like an engineering bug on paper.
+[00:01:22] Dr. Vasquez: What actually happened to those seven patients afterward? Did anyone follow up with them directly?
+[00:01:32] Dhruvisha: Yes, Riverside's care team called all seven that same night, once we caught it and flagged Karen. No one was harmed, but at least two patients said they were frightened before the callback came.
+[00:01:50] Dr. Vasquez: That's the part that actually matters to me. A false alarm that gets caught in code review is a non-event. A false alarm a real patient feels for even twenty minutes is not.
+[00:02:06] Marcus: Agreed, and that's on us, this shouldn't have been possible to ship.
+[00:02:14] Priya: How did this get past testing? We test the notification system.
+[00:02:22] Sam: We test the notification content and delivery. We don't have anything that catches "a stale feature flag is pointed at the wrong environment" specifically. Staging looked fine in isolation.
+[00:02:38] Marcus: Right, staging was internally consistent, it just wasn't actually mirroring what production would do with that flag state.
+[00:02:50] Priya: So the real gap is we don't have a check that says "does staging's behavior for pilot-affecting features actually match what production will do," we only check "does staging work correctly as staging."
+[00:03:10] Dr. Mehta: I want to understand one thing plainly — is there a way this same class of bug could route the wrong severity in either direction, not just a false tier two, but a missed real tier two?
+[00:03:26] Sam: Theoretically, yes, if a flag pointed the wrong direction, it could suppress a real alert instead of falsely triggering one. That's the scarier version of this same bug class.
+[00:03:40] Dr. Vasquez: That's worse than what actually happened Wednesday, even though what happened Wednesday was already bad.
+[00:03:50] Dhruvisha: So the fix can't just be "don't misfire a feature flag again," it needs to catch this whole category before it reaches real patients.
+[00:04:04] Marcus: Agreed. I think we need an automated smoke test that specifically verifies staging's alert-routing behavior matches production's, for every release that touches anything alert or notification related, before it goes out.
+[00:04:24] Priya: And it shouldn't be optional or something a reviewer has to remember to run, it should block the release if it fails.
+[00:04:34] Marcus: Agreed, it goes into the required CI checks, not a manual step someone can skip under deadline pressure.
+[00:04:46] Sam: I can write that smoke test. It'd simulate a tier one and tier two trigger condition against both environments and diff the actual routing behavior.
+[00:05:00] Dhruvisha: How long would that take to build properly, not rushed?
+[00:05:07] Sam: About three days to build it right, plus testing the test itself against a few known-bad configurations so I trust it actually catches this class of bug.
+[00:05:20] Marcus: Take the three days. This is exactly the kind of thing worth slowing down for.
+[00:05:28] Dr. Vasquez: I'd also like to see the actual message that went to Riverside's patients about this, after the fact. Not the internal incident report, the patient-facing explanation.
+[00:05:42] Dhruvisha: Karen's care team handled that directly with patients by phone, I don't think we sent our own message. Should we?
+[00:05:52] Dr. Vasquez: I think a short, honest note through the app wouldn't hurt, acknowledging the error plainly, not a legal non-apology. I'd want to review the wording before it goes out, same as any patient-facing language.
+[00:06:10] Dhruvisha: Agreed, I'll draft something and get it to you before it's sent, not after.
+[00:06:18] Dr. Vasquez: That works.
+[00:06:21] Marcus: So, to close this out — Sam owns the staging-mirrors-production alert smoke test, three days, added as a required CI gate for anything alert or notification related.
+[00:06:36] Sam: Confirmed.
+[00:06:38] Marcus: I'll make sure the CI gate is actually required, not advisory, once Sam's test exists.
+[00:06:46] Dhruvisha: And I'll draft the patient-facing note about Wednesday's incident and get it to Dr. Vasquez for review before anything goes out.
+[00:06:58] Dr. Vasquez: Sounds right to me. Thank you all for taking this as seriously as it deserved.
+[00:07:08] Priya: Lesson learned, this one stings but it's a good one to have learned early.
+[00:07:16] Marcus: Agreed. Let's move on.

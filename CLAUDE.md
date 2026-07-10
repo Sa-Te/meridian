@@ -242,7 +242,9 @@ A phase in `ROADMAP.md` is done only when:
 3. Any ADR-worthy decision made during the phase has a written ADR.
 4. The change is committed with a conventional commit message
    (`feat:`, `fix:`, `test:`, `docs:`, `chore:`) and pushed to `main`
-   (or the phase's branch, merged and pushed).
+   (or the phase's branch, merged and pushed). No `Co-Authored-By` trailer
+   on any commit, regardless of how much of the change Claude Code wrote --
+   commits in this repo are attributed to TJ only.
 5. TJ has been walked through what changed and why, in plain language,
    before moving to the next phase.
 

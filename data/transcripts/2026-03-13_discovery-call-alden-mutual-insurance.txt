@@ -1,0 +1,26 @@
+[00:00:08] Lena: Angela, thanks for joining. Todd's here too, he leads partnerships on our side.
+[00:00:16] Angela: Good to meet you both. I'll be honest upfront, we get pitched a lot of engagement apps, so I want to be direct about what actually moves the needle for us.
+[00:00:30] Todd: Please, direct is easier for everyone. Go ahead.
+[00:00:35] Angela: Alden covers about two hundred thousand lives in our commercial book. We've bought engagement tools before, monthly active users, streaks, that kind of thing. None of it moved our actual claims numbers.
+[00:00:56] Lena: That's a fair thing to be skeptical about. What would actually move claims numbers, in your view?
+[00:01:08] Angela: Outcomes. Did the person's blood pressure improve, did their adherence to a program actually correlate with fewer hospitalizations. Engagement metrics alone don't get me anywhere with our actuarial team.
+[00:01:28] Todd: That's a harder thing to show this early, but it's also a better thing to actually be measuring, so I don't disagree with the ask.
+[00:01:40] Angela: I'm not expecting a finished outcomes study today. I'm asking whether that's even the kind of data you're set up to produce.
+[00:01:52] Lena: We are. Adherence, perceived exertion trends, resting heart rate trends over time, and for programs with a clinical partner, actual biometric improvement markers. We have a pilot running with Riverside Health Network right now that's generating exactly that kind of data.
+[00:02:14] Angela: How far along is that pilot?
+[00:02:18] Todd: It launches in a few weeks, slightly delayed from original plan for a data-integrity fix we wanted done right rather than fast.
+[00:02:30] Angela: I'd actually take that as a good sign, not a bad one. A vendor delaying launch to fix a data bug says more to me than one that ships on time with silent problems.
+[00:02:44] Lena: Appreciate you saying that, it wasn't a fun conversation internally.
+[00:02:52] Angela: I imagine not. Here's where I actually land — I'm not in a position to commit anything today, and I wouldn't want to even if I could, without seeing real numbers.
+[00:03:08] Todd: Understood. What would you want to see, specifically, before a real conversation about a partnership?
+[00:03:18] Angela: An outcomes report. Adherence rates, any biometric trend data, even early and directional, from an actual running program. Riverside, once it's live, sounds like exactly that.
+[00:03:34] Lena: I can build a report template now, so the moment we have even a month of Riverside data, we're not scrambling to figure out how to present it.
+[00:03:48] Angela: That would help. I'd also want to know it's presented in a way our actuarial team can actually parse, not just a product dashboard screenshot.
+[00:04:04] Lena: Noted, I'll design it with that audience in mind, not a marketing audience.
+[00:04:12] Todd: Given the pilot just launches in a few weeks, when would make sense to reconnect? I don't want to come back to you too early with nothing real to show.
+[00:04:26] Angela: Give it real time to generate something meaningful. Six weeks out feels right, not two.
+[00:04:36] Todd: Six weeks works. I'll get that on the calendar.
+[00:04:42] Angela: Good. I'd rather this take longer and be real than move fast and be another engagement tool that doesn't survive contact with our actuarial team.
+[00:04:56] Lena: Understood, and appreciated, honestly. I'll have the outcomes report template ready well before we need it.
+[00:05:06] Todd: Thanks for the direct feedback, Angela, it's actually useful. Talk in six weeks.
+[00:05:14] Angela: Talk then.

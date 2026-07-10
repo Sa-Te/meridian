@@ -1,0 +1,30 @@
+[00:00:07] Dhruvisha: Grace, thanks for dialing in, I know outside counsel calls are usually billed by the minute, so we'll try to be efficient.
+[00:00:18] Grace: No rush on my end today, don't worry about the clock. Let's just get this right.
+[00:00:26] Marcus: Good, because this is the one topic where I'd rather be slow and correct than fast and wrong.
+[00:00:35] Dhruvisha: Agreed. So, the question on the table — how long do we keep raw biometric data once a patient's program ends, and what happens to it after.
+[00:00:50] Priya: Right now the honest answer is we keep everything forever, because nobody's told me otherwise.
+[00:01:00] Grace: That's a real exposure, for what it's worth. Indefinite retention of biometric health data is exactly the kind of thing that looks bad in a breach scenario, even if nothing was ever done wrong with it.
+[00:01:18] Todd: What's the actual legal minimum we need to hit? I assume there's a floor we can't go under.
+[00:01:28] Grace: There's not one clean federal number, it varies by state and by whether you're treated as a covered entity or a business associate in a given arrangement. For a program like Riverside's, I'd want to retain raw data long enough to defend against a malpractice claim if one arose, which practically means a couple years past program end, not indefinitely.
+[00:01:56] Marcus: Two years feels like a number I can actually build a policy around. Is that a real recommendation or a placeholder?
+[00:02:08] Grace: It's a real recommendation, based on typical statute of limitations windows for the states Riverside operates in, with some buffer. I'll confirm that in writing, I don't want you building a system off something I said verbally on a call.
+[00:02:28] Dhruvisha: Appreciated, we'll want that in writing regardless before we call this final.
+[00:02:36] Priya: What happens to the data after two years, straight deletion, or do we keep anything at all?
+[00:02:46] Grace: Straight deletion of anything identifiable. But there's real value in keeping de-identified, aggregated data longer, for research or for your own product improvement, as long as it's genuinely de-identified, not just stripped of a name.
+[00:03:06] Dhruvisha: What does "genuinely de-identified" mean in practice, versus what we might sloppily think counts?
+[00:03:16] Grace: No name, no direct identifiers, and importantly, aggregated enough that you can't re-identify someone from a unique combination of remaining fields. A single patient's exact workout timestamps for a year, even without a name, can sometimes be identifying on its own.
+[00:03:40] Priya: So we'd need to actually aggregate, not just delete a name column and call it done.
+[00:03:48] Grace: Correct. I'd want to see the actual de-identification approach before you rely on "indefinite retention" for anything, even aggregated data.
+[00:04:04] Dhruvisha: Let's lock the shape of this then. Raw, identifiable biometric data: retained two years past program end, then deleted. Properly aggregated, de-identified data: retained indefinitely for research and product use.
+[00:04:26] Marcus: That's buildable. It's an actual policy I can turn into an engineering task, not a vague principle.
+[00:04:36] Grace: I agree that's a reasonable shape, pending my written confirmation on the two-year figure specifically.
+[00:04:46] Todd: What about a patient who wants their data deleted early, before the two years, if they leave the program upset about something unrelated?
+[00:05:00] Grace: That's a separate right-to-deletion question depending on state law and any consent language we've had them sign. I'd want to look at your actual consent form before answering that one properly, rather than guess.
+[00:05:20] Dhruvisha: Let's not conflate that with today's decision then, that's its own follow-up.
+[00:05:28] Grace: Agreed, flag it separately, don't let it stall what we decided today.
+[00:05:36] Dhruvisha: So, decision stands: two-year retention on raw identifiable biometric data post program-end, then deletion. Indefinite retention on properly aggregated, de-identified data.
+[00:05:52] Priya: I'll build the auto-purge job for the two-year raw data expiry. I'll flag the de-identification approach to Grace before we rely on it for anything long-term, rather than assume our aggregation is good enough.
+[00:06:12] Grace: Please do, I'd rather review it once properly than have to unwind an assumption later.
+[00:06:20] Grace: And I'll get you written confirmation on the two-year figure by end of week, so you're not building against something I only said out loud.
+[00:06:32] Dhruvisha: Perfect. Thank you, Grace, genuinely, this was exactly the kind of thing I didn't want us guessing on.
+[00:06:44] Grace: Happy to help, talk soon.

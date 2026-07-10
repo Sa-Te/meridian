@@ -1,0 +1,30 @@
+[00:00:05] Marcus: All right, sprint twelve review. Priya, you want to kick off with the onboarding numbers since that's what everyone's been staring at?
+[00:00:16] Priya: Sure. So we shipped the new onboarding flow last sprint with the mandatory wearable connection step. Completion rate dropped.
+[00:00:28] Dhruvisha: Dropped how much?
+[00:00:31] Priya: Sixty-one percent to forty-four percent, week over week, comparing before and after the release.
+[00:00:41] Sam: Ouch. I built that step, so, feedback welcome, but seventeen points is a lot.
+[00:00:50] Marcus: It's not on you, Sam, the step works fine. The question is whether it should be mandatory at all.
+[00:01:05] Dhruvisha: What are people actually dropping off at, specifically? Is it the Bluetooth pairing screen, or the "which device do you have" screen before it?
+[00:01:20] Sam: Mostly the pairing screen itself. We see people land on it and then just... not come back for a session or two.
+[00:01:34] Priya: My guess is people don't have their watch charged, or it's not with them, and they just bail rather than go get it.
+[00:01:47] Dhruvisha: That tracks. Most people aren't sitting at their desk with their Apple Watch on when they're signing up for a coaching app.
+[00:02:00] Marcus: So what's the actual decision here. Do we make the wearable connection optional, and let people connect it later from settings?
+[00:02:14] Dhruvisha: I think we have to. We're losing almost a fifth of signups over a step that isn't required for the core loop to work — you can log a workout manually without a wearable.
+[00:02:30] Priya: Right, the wearable just enriches the data, heart rate during the workout, resting HR trend, that kind of thing. It's not required for WorkoutFeedback entries at all.
+[00:02:45] Sam: I'm fine making it optional. It's maybe half a day of work to move it out of the required flow and into a "connect later" prompt.
+[00:03:00] Marcus: Let's do that then. We make wearable connection optional in onboarding, moved to a dismissible prompt, and it lives permanently as a settings option too.
+[00:03:15] Dhruvisha: Agreed, let's ship that this sprint if we can. It's a small enough change and it's actively costing us signups every day it's live.
+[00:03:28] Sam: I can have it done by Friday. It's mostly deleting a hard gate and replacing it with a "skip" button.
+[00:03:40] Priya: I'll add an analytics event for "skipped wearable connection" so we can see how many people actually connect it later from settings versus never.
+[00:03:54] Marcus: Good, that answers the follow-up question before someone asks it in three weeks.
+[00:04:05] Dhruvisha: While we're on onboarding — Naomi mentioned in Slack that the drop-off might also correlate with a specific OS version. Is that still worth chasing?
+[00:04:20] Marcus: Naomi's out today, but from what she sent me, it looked more like noise than a real pattern. Small sample size on that OS version.
+[00:04:33] Priya: Agreed, I looked at the same numbers. Not worth spending time on until we have more data.
+[00:04:42] Dhruvisha: Okay, deprioritize it for now, we can revisit if it shows up again with a bigger sample.
+[00:04:52] Sam: One more onboarding thing — do we want a progress indicator on the multi-step signup? People kept asking support how many steps were left.
+[00:05:10] Marcus: That's a nice-to-have, not this sprint. Let's park it in the backlog, it's not blocking anything.
+[00:05:20] Dhruvisha: Agreed, park it.
+[00:05:24] Marcus: Okay. Anything else on onboarding before we move to the backend items?
+[00:05:32] Priya: Nothing from me.
+[00:05:35] Sam: Same, I'm good.
+[00:05:38] Marcus: Cool, moving on then.

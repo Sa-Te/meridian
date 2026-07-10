@@ -1,0 +1,34 @@
+[00:00:06] Marcus: Sprint fifteen review, and this one matters more than usual since we're two sprints from the Riverside launch date. Priya, start with the sync bug.
+[00:00:20] Priya: Right. So during load testing this week, we found that when a patient logs a workout offline and it syncs later, there's a window where duplicate WorkoutFeedback entries can get created.
+[00:00:38] Dhruvisha: Duplicate how? Same workout showing up twice in their history?
+[00:00:44] Priya: Yes, if the app retries a sync request because it didn't get a clean success response, but the first request actually did succeed server-side, we insert it twice.
+[00:01:00] Naomi: That would also mess with the baseline calculation I built. Two entries for one workout skews the rolling average.
+[00:01:12] Sam: How often does this actually happen? Is this a theoretical edge case or something we're seeing regularly?
+[00:01:22] Priya: We saw it eleven times in about two hundred simulated offline-sync workouts during load testing. So not rare.
+[00:01:34] Marcus: That's a real problem, not an edge case. Can it be fixed before launch, or are we looking at a workaround?
+[00:01:46] Priya: It's fixable properly. We need an idempotency key on the sync request so the server can recognize a retry and just return the existing record instead of creating a new one.
+[00:02:04] Marcus: How much work is that?
+[00:02:07] Priya: A few days for the server side. Sam would need to generate and send the key from the client too, so it's coordinated work, not just backend.
+[00:02:20] Sam: I can do my side in a day once Priya's got the key format defined.
+[00:02:28] Dhruvisha: Here's the question I actually care about — do we launch on schedule with this bug known and unfixed, or do we push the date?
+[00:02:42] Marcus: I don't think we launch with a known data-integrity bug going to a hospital system client. If Riverside's clinicians see duplicate entries in week one, that's how you lose trust in the whole pilot immediately.
+[00:03:00] Naomi: Agreed, and it directly breaks the alert baseline work too, which is the other thing Riverside actually cares about.
+[00:03:12] Dhruvisha: Then we push. How much time does the fix actually need, realistically, including testing it doesn't reappear?
+[00:03:24] Priya: If Sam and I both start Monday, I'd want a full week for the fix plus another round of load testing after. So call it one week, not two days.
+[00:03:38] Marcus: Then we're deciding to delay the Riverside launch by one week. I'd rather say that out loud now than let it slip silently.
+[00:03:50] Dhruvisha: Agreed, we delay by one week rather than launch with a known sync bug. That's the decision.
+[00:04:02] Marcus: Priya, you and Sam own the idempotency key fix, full week, starting Monday.
+[00:04:12] Priya: Confirmed, we'll start Monday.
+[00:04:16] Sam: I'll also add a retry mechanism on the client side while I'm in there, so a failed sync actually retries a few times before giving up entirely, instead of silently dropping the workout.
+[00:04:32] Marcus: Good, add that as long as it doesn't put the idempotency fix at risk timing-wise.
+[00:04:40] Sam: It won't, it's a small addition to code I'm already touching.
+[00:04:47] Dhruvisha: I'll let Karen and Bill at Riverside know about the one-week delay today, I'd rather they hear it from me directly than find out from a slipped date on a shared doc.
+[00:05:02] Marcus: Appreciated. Naomi, does the baseline calculation need anything from you once the dupes are gone, or is it just clean once the underlying data's fixed?
+[00:05:16] Naomi: Just clean once the data's fixed, I don't need to change my logic, I just need real data to not have duplicates in it.
+[00:05:28] Marcus: Good. What else is on the board for this sprint, anything blocking?
+[00:05:36] Sam: The notification tiering work from clinical advisory is basically done, just waiting on final copy from Dr. Vasquez before I wire in the actual push text.
+[00:05:50] Priya: WorkoutFeedback schema migration shipped clean last sprint, nothing new there.
+[00:06:00] Marcus: Good. Let's reconvene mid-week on the sync fix specifically, don't wait for the next full review if something's off.
+[00:06:12] Priya: Agreed.
+[00:06:15] Dhruvisha: Thanks everyone, I know this isn't the review anyone wanted to have two sprints out from launch.
+[00:06:26] Marcus: Better now than in week one of the pilot.

@@ -20,6 +20,12 @@ class Settings(BaseSettings):
         description="Comma-separated origins allowed to call the API from a browser.",
     )
 
+    database_url: str = Field(
+        default="postgresql+asyncpg://meridian:meridian@postgres:5432/meridian",
+        description="Async SQLAlchemy connection string for the pgvector-enabled Postgres "
+        "instance. See ADR-0004.",
+    )
+
     llm_provider: str = Field(
         default="gemini",
         description="Active LLMProvider implementation: 'gemini' or 'anthropic'. See ADR-0013.",

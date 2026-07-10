@@ -1,0 +1,27 @@
+[00:00:06] Marcus: Sprint thirteen review. Before we get into new work, Dhruvisha wanted to raise something about the WorkoutFeedback schema.
+[00:00:18] Dhruvisha: Yeah. Naomi's baseline-alert prototype needs a stable shape to build against, and the clinical dashboard work Priya's starting next sprint needs the same thing. Right now the schema's still moving under both of them.
+[00:00:35] Naomi: It's true, I've already had to redo one query because a field got renamed under me last week.
+[00:00:44] Priya: That was me, sorry, I renamed "notes" to "patient_notes" because we also have engineering notes internally and it was confusing in the raw table.
+[00:00:58] Dhruvisha: I think we should lock the WorkoutFeedback schema before the next sprint. No more renames, no more added fields, without it going through me first.
+[00:01:14] Marcus: What's actually in it as of today? Let's just say the fields out loud so everyone agrees on what's being locked.
+[00:01:24] Priya: Perceived exertion, one through ten. Pain flag, boolean plus optional free text. Patient notes, free text. And a biometric snapshot reference, which just points at the wearable data for that workout window if one exists.
+[00:01:44] Naomi: That's what I've been building against. If that's frozen, my prototype is solid ground.
+[00:01:52] Dhruvisha: Anyone have a field they still want in before we freeze it? Better to fight about it now than after it's locked.
+[00:02:08] Sam: From the frontend side, no complaints, that maps cleanly to what we show in the post-workout screen already.
+[00:02:18] Priya: I'd actually push back gently on locking it completely. What if clinical advisory comes back next week wanting something new on the pain flag, now that alert thresholds are in flight too?
+[00:02:34] Dhruvisha: That's fair, but I'd rather handle that as a deliberate schema change request than leave the door open for anyone to just rename a column because it reads better to them.
+[00:02:50] Marcus: So the actual decision is: schema is frozen as of today, and any future change is a proposal that goes through Dhruvisha, not an in-flight rename.
+[00:03:05] Dhruvisha: That's the decision, yes. Priya, can you get whatever migration is needed to finalize the current shape done this sprint, so it's not just a verbal freeze?
+[00:03:20] Priya: Yes, I'll write the migration and make sure it matches exactly what we just said out loud, four fields, nothing implicit.
+[00:03:32] Marcus: And I'll make sure the team knows — no schema changes on WorkoutFeedback without going through Dhruvisha first, full stop, starting today.
+[00:03:44] Dhruvisha: Thanks. Naomi, once the migration's in, is your prototype unblocked?
+[00:03:52] Naomi: Fully unblocked, yes. I was only stuck on the pain flag's exact type, boolean versus something richer, and now I know it's boolean plus text.
+[00:04:08] Marcus: Good. Let's move to the rest of the sprint board. Sam, what's the state of the wearable settings work from last sprint's onboarding change?
+[00:04:20] Sam: Shipped Friday like planned. Wearable connect is now optional in onboarding and lives permanently under settings.
+[00:04:30] Priya: And the analytics event's live too, we'll have a week of "skipped versus connected later" data by next review.
+[00:04:40] Dhruvisha: Good, remind me to look at that next time, I want to see the actual number.
+[00:04:48] Marcus: Noted. Anything blocking anyone right now?
+[00:04:53] Sam: Nothing blocking, I'm picking up the two-tier notification spec next, once clinical advisory finalizes the language.
+[00:05:05] Naomi: Nothing blocking either.
+[00:05:08] Priya: Same, I'm good.
+[00:05:11] Marcus: All right, that's the review. Thanks everyone.
