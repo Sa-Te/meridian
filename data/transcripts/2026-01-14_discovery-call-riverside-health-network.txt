@@ -1,0 +1,36 @@
+[00:00:08] Dhruvisha: Thanks for making time this morning. I know you've got the board offsite next week, so we'll keep this tight.
+[00:00:19] Karen: No, this is good timing actually. We need to have a direction before that offsite, so talk fast if you have to.
+[00:00:31] Lena: Fair enough. So last time we spoke it was mostly Bill and our engineering folks talking through the data side. Today I wanted to get Karen's read on the clinical and program side.
+[00:00:52] Karen: Sure. So context for whoever reads this back later — Riverside runs a cardiac rehab program across four sites. Right now adherence tracking is a paper packet patients fill out and a nurse enters into Epic a week later.
+[00:01:20] Karen: We lose people in that gap. By the time we know someone's stopped showing up for their walks, it's been two weeks.
+[00:01:35] Dhruvisha: That's exactly the gap Ondera Coach is built for. Patients log workouts, we capture perceived exertion and any pain flags in real time, and your care team sees it same day instead of same month.
+[00:02:01] Bill: I read the security overview you sent. Where does the biometric data actually live, physically?
+[00:02:10] Lena: US-based, single region, encrypted at rest and in transit. We can send you the SOC 2 report today if you don't have it already.
+[00:02:24] Bill: I have an old one. Send the current.
+[00:02:29] Karen: Bill, let's not get ahead of the compliance review, I want to talk program shape first.
+[00:02:38] Bill: Go ahead.
+[00:02:41] Karen: We were thinking a pilot. Not the whole cardiac rehab population, that's over four hundred patients across sites. Something smaller we can actually watch closely.
+[00:03:05] Dhruvisha: What number were you picturing?
+[00:03:09] Karen: Fifty. One site, the patients already six weeks into their twelve-week program, so we're not dealing with brand-new-diagnosis anxiety on top of a new app.
+[00:03:28] Dhruvisha: Fifty is workable. Ninety days sound right to you, so you get through a full program cycle plus some tail data?
+[00:03:40] Karen: Ninety days works. I'd want to start in Q2, once flu season chaos calms down at the clinic.
+[00:03:52] Lena: Okay — so to say it back: a ninety-day pilot, fifty patients, one Riverside site, starting Q2. That's what I'll draft into a proposal.
+[00:04:10] Karen: That's the shape, yes.
+[00:04:14] Bill: Before any patient data moves anywhere, my security team needs to review the data-sharing agreement. That's not optional on our end.
+[00:04:28] Lena: Understood, that's standard for us too. I'll get the BAA and data flow diagram over as part of the proposal package.
+[00:04:40] Bill: I'll loop in our security lead, Priyanka, once I have it. She'll want two weeks minimum to turn it around, realistically.
+[00:04:55] Dhruvisha: That timeline works fine against a Q2 start.
+[00:05:02] Karen: One more thing — who on the clinical side reviews what the app actually tells patients when something looks off? I don't want an app telling my patients they're having a heart attack over a treadmill blip.
+[00:05:20] Dhruvisha: We have a clinical advisory board that signs off on anything patient-facing around alerts. I can bring you into that conversation if it'd help you trust the pilot more.
+[00:05:35] Karen: It would. I don't need to run the meeting, I just want visibility.
+[00:05:44] Lena: I'll add you to the notes distribution for those sessions once we're past signing.
+[00:05:52] Bill: Send the current SOC 2 report today, please, not with the proposal next week. I want my team starting review in parallel.
+[00:06:05] Lena: I'll send it this afternoon.
+[00:06:10] Dhruvisha: So, recapping where we landed: we're drafting a ninety-day, fifty-patient pilot at one Riverside site, targeting a Q2 start.
+[00:06:24] Karen: Agreed.
+[00:06:27] Dhruvisha: Lena, can you get the pilot proposal and the data-sharing package to Karen and Bill by end of next week?
+[00:06:38] Lena: Yes, I'll have it over by next Friday.
+[00:06:44] Bill: And I'll get Priyanka looped in on the security review as soon as that package lands.
+[00:06:52] Karen: Good. I'll take the shape of this to the board next week as directionally agreed, pending the paperwork.
+[00:07:05] Dhruvisha: Perfect. Thanks both, talk soon.
+[00:07:10] Karen: Thanks, bye.

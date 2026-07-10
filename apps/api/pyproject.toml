@@ -10,6 +10,10 @@ dependencies = [
     "pydantic-settings>=2.6",
     "google-genai>=2.0",
     "anthropic>=0.110",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "asyncpg>=0.29",
+    "pgvector>=0.3",
 ]
 
 [project.optional-dependencies]
@@ -31,6 +35,9 @@ packages = ["app"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+# Alembic autogenerates versions/*.py; hand-editing each one to satisfy
+# pyupgrade/style rules on every migration isn't worth it.
+extend-exclude = ["alembic/versions"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
@@ -46,4 +53,10 @@ disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+# app/db.py's engine (and its connection pool) is created once at module
+# import time and shared across the whole test session -- tests must share
+# one event loop too, or pooled asyncpg connections get reused across loops
+# and raise "attached to a different loop".
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 testpaths = ["tests"]

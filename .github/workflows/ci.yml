@@ -15,6 +15,24 @@ jobs:
     defaults:
       run:
         working-directory: apps/api
+    env:
+      # Points at the postgres service below, not the docker-compose service
+      # name -- CI runs pytest directly on the runner, not inside a container.
+      DATABASE_URL: postgresql+asyncpg://meridian:meridian@localhost:5432/meridian
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: meridian
+          POSTGRES_PASSWORD: meridian
+          POSTGRES_DB: meridian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U meridian"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - uses: actions/checkout@v4
 
@@ -36,6 +54,9 @@ jobs:
 
       - name: Type-check (mypy)
         run: mypy app
+
+      - name: Run database migrations
+        run: alembic upgrade head
 
       - name: Unit + integration tests (pytest)
         run: pytest -q

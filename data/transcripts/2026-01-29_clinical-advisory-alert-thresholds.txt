@@ -1,0 +1,41 @@
+[00:00:10] Dhruvisha: Thanks for joining, both of you. Today's just the one topic — heart rate anomaly alerts — but I expect it's a meaty one.
+[00:00:24] Dr. Vasquez: It is. I've been waiting for this conversation since I saw the first draft of the alert logic.
+[00:00:35] Naomi: That's a little ominous. What's wrong with it?
+[00:00:41] Dr. Vasquez: Nothing's wrong exactly, it's just naive. Right now the trigger is any heart rate reading over one hundred sixty during a logged workout, flat threshold, correct?
+[00:00:56] Naomi: Correct. Sustained for at least sixty seconds, to avoid false triggers on a single noisy reading.
+[00:01:10] Dr. Vasquez: Here's my problem with a flat number. A deconditioned sixty-year-old cardiac rehab patient hitting one hundred sixty is a real event. A thirty-two-year-old marathoner in this same program hits one hundred sixty doing an easy jog and it means nothing.
+[00:01:34] Dr. Mehta: Right, and we have both patient types in the program, potentially in the same pilot cohort even.
+[00:01:44] Dhruvisha: So a fixed threshold either over-alerts on fit patients or under-alerts on deconditioned ones, depending on where you set the number.
+[00:01:58] Dr. Vasquez: Exactly. What I'd want is something relative to the individual patient — their own resting heart rate and their own observed exertion baseline, not a population-wide cutoff.
+[00:02:15] Naomi: That's doable, but it needs a baseline period. We can't calculate "your normal" from zero data points.
+[00:02:28] Dr. Mehta: How many workouts would you need to establish something trustworthy?
+[00:02:35] Naomi: I'd want at least five to seven logged workouts with heart rate data before we trust a personal baseline. Before that, we'd have to fall back to something conservative.
+[00:02:50] Dr. Vasquez: That's fine, most of Riverside's pilot patients are six weeks in already, they'll have plenty of history by the time this ships.
+[00:03:05] Dhruvisha: So walk me through what the actual rule would look like, once someone has a baseline.
+[00:03:14] Dr. Vasquez: My proposal — and I want Raj to poke holes in this before we call it final —
+    is that we alert when heart rate exceeds the patient's baseline by forty percent, sustained for three full minutes rather than one. Sustained, relative, and a longer window than what's there today.
+[00:03:40] Dr. Mehta: I like relative-to-baseline as the core idea. I'd push back on forty being a magic number without more source behind it — where did forty come from?
+[00:03:55] Dr. Vasquez: It's roughly consistent with cardiac rehab literature on target heart rate zones during supervised exercise, but you're right that I pulled the exact figure from memory, not a citation.
+[00:04:12] Dr. Mehta: Send it to me and I'll sanity check it against the ACSM guidelines this week. Forty might be right, but let's not ship a number nobody can defend if Riverside's cardiologists ask.
+[00:04:28] Dr. Vasquez: Fair, I'll dig up what I was thinking of and send it over.
+[00:04:35] Naomi: One technical concern on the three-minute sustained window — what happens during that three minutes if the wearable drops connection? Do we reset the clock, or keep counting through gaps?
+[00:04:52] Dr. Mehta: Medically I'd say keep counting through short gaps, under maybe thirty seconds. A three-minute sustained elevation with an eight-second Bluetooth hiccup in the middle is still a three-minute sustained elevation.
+[00:05:10] Naomi: Okay, that's implementable, I just needed the medical answer, not the engineering answer.
+[00:05:20] Dhruvisha: What about patients with an arrhythmia history? Does baseline-relative logic hold up for them, or do they need something different entirely?
+[00:05:34] Dr. Mehta: That's actually my bigger worry than the forty percent number. Some arrhythmia patients have naturally erratic heart rate that wouldn't fit a clean baseline model at all.
+[00:05:50] Dr. Vasquez: Agreed, that's a real edge case, not a hypothetical one. Raj, since you're closer to that population, can you take point on what the policy should be for arrhythmia-flagged patients?
+[00:06:08] Dr. Mehta: I can. My instinct is those patients need a lower absolute ceiling as a backstop, in addition to the relative logic, but let me actually look at their charts before I commit to that.
+[00:06:25] Dhruvisha: Okay. So where we've landed, unless someone wants to reopen it — the alert logic moves from a flat one hundred sixty threshold to patient baseline plus forty percent, sustained three minutes, with gaps under thirty seconds not resetting the clock.
+[00:06:48] Dr. Vasquez: That's where I am, yes.
+[00:06:51] Naomi: Agreed from the implementation side, that's all buildable.
+[00:06:56] Dr. Mehta: Agreed, with the caveat that arrhythmia patients get a separate policy I still need to define.
+[00:07:08] Dhruvisha: Good. Dr. Vasquez, can you send Raj the source behind the forty percent figure this week?
+[00:07:18] Dr. Vasquez: Yes, today or tomorrow.
+[00:07:22] Dhruvisha: Naomi, can you have a prototype of the baseline-relative calculation ready by next sprint, so we're not just talking about it again in three weeks?
+[00:07:35] Naomi: Yes, that's a reasonable target. I'll build it against last quarter's Riverside pilot test data.
+[00:07:46] Dhruvisha: And Dr. Mehta, take the time you need on the arrhythmia policy, but let's check in on it in two weeks either way.
+[00:07:58] Dr. Mehta: Works for me.
+[00:08:02] Dr. Vasquez: One last thing before we go — none of this ships to real patients without coming back through this group for a final look. I don't want it slipping out in a release note.
+[00:08:16] Dhruvisha: Agreed, nothing patient-facing on alerts goes out without a sign-off from this board first. That's the standing rule regardless.
+[00:08:28] Dr. Mehta: Good. Thanks, this was a productive one.
+[00:08:33] Dhruvisha: Thanks both, talk in two weeks.

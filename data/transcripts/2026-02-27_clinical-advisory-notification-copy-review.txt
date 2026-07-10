@@ -1,0 +1,33 @@
+[00:00:09] Dhruvisha: Today's topic is notification language. Sam's got the current drafts, Dr. Vasquez and Dr. Mehta, you're here to tell us where it's wrong.
+[00:00:22] Dr. Vasquez: Happy to. Sam, want to just read us what's there today?
+[00:00:29] Sam: Sure. Right now, any alert-worthy event sends the same push notification: "Your heart rate reading was unusual. Please check the app."
+[00:00:44] Dr. Mehta: Same wording whether it's a mild anomaly or the sustained-elevation case Elena and I worked out with Naomi a few weeks back?
+[00:00:55] Sam: Same wording for everything right now, yes. We haven't built tiering into the copy at all.
+[00:01:06] Dr. Vasquez: That's a problem. If every alert sounds the same, patients either panic every time, or worse, they get used to it and ignore the one that actually matters.
+[00:01:22] Dhruvisha: Alarm fatigue.
+[00:01:25] Dr. Vasquez: Exactly that. I've seen it in clinical settings with monitor alarms, patients and even staff start tuning them all out.
+[00:01:38] Dr. Mehta: So we need at least two tiers. Something for "this is worth noting, mention it at your next check-in," and something for "this needs attention now."
+[00:01:54] Sam: Technically that's straightforward, we already have the severity classification from the alert logic, we just never surfaced it in the copy or the notification style.
+[00:02:10] Dhruvisha: Let's make that official then — two-tier notifications, not one. What should tier one actually say?
+[00:02:22] Dr. Vasquez: Something calm. "We noticed something worth mentioning in your last workout. No action needed now, but let's talk about it at your next check-in." Non-alarming, no medical jargon.
+[00:02:42] Dr. Mehta: I'd add that it shouldn't even feel like a warning visually. Maybe not even a push notification, just something in-app they see next time they open it.
+[00:02:56] Sam: That's actually easier for us, an in-app banner instead of a push for tier one.
+[00:03:08] Dhruvisha: Agreed, tier one becomes in-app only, no push. What about tier two, the sustained elevation case?
+[00:03:20] Dr. Vasquez: Tier two needs to be a push, and it needs urgency without causing panic. This is the hard one to word well.
+[00:03:34] Dr. Mehta: I've seen bad versions of this in other apps. Either too soft, "you might want to check in," which undersells a real event, or too scary, basically implying a heart attack.
+[00:03:50] Dr. Vasquez: My instinct for tier two wording is something like: "Your heart rate has stayed elevated longer than expected. Please contact your care team now." Direct, tells them what to do, doesn't diagnose anything.
+[00:04:12] Dr. Mehta: I like "contact your care team" over anything implying self-diagnosis. It routes them to a person instead of making them guess.
+[00:04:26] Dhruvisha: Should tier two also suggest calling 911 if symptoms are severe, or is that overreach for what the app actually knows?
+[00:04:40] Dr. Vasquez: That's overreach. The app knows heart rate data, not chest pain, not shortness of breath. We shouldn't imply we know more than we do.
+[00:04:54] Dr. Mehta: Agreed, "contact your care team" is the right scope. If it's a real emergency, that's for the patient and their symptoms to decide, not an algorithm guessing from heart rate alone.
+[00:05:10] Dhruvisha: Okay. So the decision: two notification tiers, not one. Tier one is a calm in-app banner, no push, no urgency. Tier two is a push with direct language to contact their care team, nothing diagnostic, no emergency-service suggestion.
+[00:05:32] Dr. Vasquez: That's where I land.
+[00:05:35] Dr. Mehta: Agreed.
+[00:05:38] Sam: Agreed from the build side, that's a clear spec, I can work with that.
+[00:05:47] Dhruvisha: Sam, can you get the two-tier system built this sprint, banner for tier one, push for tier two?
+[00:05:58] Sam: Yes, that's my next thing on the board already, this just gives me the actual wording to use.
+[00:06:08] Dhruvisha: Dr. Vasquez, can you write the final approved copy for the tier two push? I don't want Sam or me guessing at clinical wording.
+[00:06:20] Dr. Vasquez: Yes, I'll have exact wording to you both by end of week.
+[00:06:28] Dhruvisha: Perfect. And as always, nothing ships to patients until this group signs off on the final copy.
+[00:06:38] Dr. Mehta: Standing rule, agreed.
+[00:06:41] Dhruvisha: Thanks both, great session.

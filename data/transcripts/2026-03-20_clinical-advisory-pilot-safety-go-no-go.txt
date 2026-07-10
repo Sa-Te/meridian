@@ -1,0 +1,32 @@
+[00:00:10] Dhruvisha: Okay, this is the one that matters most of anything we've done so far. Go, no-go on Riverside launch, now pushed to next Monday.
+[00:00:24] Dr. Vasquez: I've been waiting for this one too. Let's go through it properly, not rush it just because it's already been delayed once.
+[00:00:35] Marcus: Agreed. I'll run through engineering readiness, then hand it to clinical.
+[00:00:42] Dhruvisha: Go ahead, Marcus.
+[00:00:45] Marcus: The sync duplication bug is fixed, idempotency keys are in on both client and server. We ran another two hundred simulated offline syncs in staging this week, zero duplicates.
+[00:01:05] Naomi: And I re-validated the baseline calculation against the corrected data, no more skew from duplicate entries. Baselines look clean.
+[00:01:18] Dr. Mehta: What about the two-tier notification work? That was still in progress last time we all talked.
+[00:01:28] Marcus: That's done too. Tier one banners and tier two push notifications are both live in staging, using Dr. Vasquez's final approved copy.
+[00:01:42] Dr. Vasquez: I reviewed the actual staging build myself yesterday, not just a spec document. The wording matches what we agreed, word for word.
+[00:01:56] Dhruvisha: That matters to me, thank you for actually checking the real thing and not just trusting the ticket was implemented correctly.
+[00:02:10] Dr. Mehta: And my arrhythmia patient policy — where does that stand? I know it wasn't blocking the sync fix, but it was still open last I checked.
+[00:02:24] Naomi: I built the fallback absolute ceiling you specified, on top of the baseline-relative logic, for any patient flagged with arrhythmia history in their intake.
+[00:02:38] Dr. Mehta: And it's been tested against real chart data, not just synthetic cases?
+[00:02:45] Naomi: Tested against twelve real de-identified Riverside charts you gave me last month, yes. All twelve behaved the way you'd expect clinically, no false negatives on the cases you flagged as concerning.
+[00:03:04] Dr. Mehta: That's what I needed to hear. I'm satisfied on that front.
+[00:03:12] Dhruvisha: So where are we. Sync bug, fixed and verified. Baselines, clean. Notifications, two-tier, clinically reviewed in the actual build. Arrhythmia policy, tested against real charts.
+[00:03:32] Dr. Vasquez: That's a much stronger position than we were in a month ago, genuinely.
+[00:03:40] Marcus: One more thing from engineering, not a blocker, just a disclosure. We added a new automated check this week that mirrors staging against what production will actually look like before any pilot-affecting release, going forward.
+[00:03:58] Dhruvisha: That's new, is that in response to something specific?
+[00:04:05] Marcus: More a lesson from how close the sync bug came to shipping unnoticed. We'd rather catch that class of thing automatically before it ever gets to a review like this one.
+[00:04:20] Dr. Vasquez: I appreciate that, genuinely. Okay — my read is we're ready. I want to be on call myself during the first week of the pilot, not a general on-call rotation, me specifically.
+[00:04:38] Dr. Mehta: I'll back her up the second week, once the first week's proven quiet.
+[00:04:46] Dhruvisha: I think that's the right level of caution for a first real hospital-system pilot. Agreed.
+[00:04:56] Dhruvisha: So, the decision: we go ahead with Monday's launch, conditional on Marcus giving a final written sign-off once the sync fix and notification tiering are both verified clean in staging one more time before go-live.
+[00:05:18] Marcus: I'll do that verification pass Friday and send written sign-off before end of day.
+[00:05:28] Dr. Vasquez: And I'm on call all of week one.
+[00:05:33] Dr. Mehta: I'm on call week two.
+[00:05:37] Dhruvisha: Good. I'll let Karen and Bill at Riverside know we're proceeding Monday as planned, no further delay.
+[00:05:48] Marcus: Sounds good to me.
+[00:05:52] Dhruvisha: This has been a long road to get here. Thank you both for not letting anything slide just because we were under time pressure.
+[00:06:04] Dr. Vasquez: That's the whole point of this board existing. Good luck Monday.
+[00:06:10] Dr. Mehta: Agreed, good luck.

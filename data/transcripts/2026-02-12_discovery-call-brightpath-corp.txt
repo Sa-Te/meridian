@@ -1,0 +1,25 @@
+[00:00:07] Todd: Monica, Derek, thanks for hopping on. Dhruvisha's tied up in a clinical session this morning so it's just me from our side.
+[00:00:19] Monica: No problem. We've got about twenty-five minutes before our next thing, so let's use it well.
+[00:00:28] Todd: Understood. Last call you mentioned wanting this for BrightPath's wellness benefit, not the cardiac rehab use case. Can you say more about what you're picturing?
+[00:00:42] Monica: Right, different problem entirely for us. We've got about six thousand employees on the wellness benefit, and engagement with our current vendor's app is embarrassing. Something like eight percent monthly active.
+[00:01:05] Derek: And renewal on that contract is coming up, so this is good timing for us to be looking around.
+[00:01:14] Todd: Got it. So less clinical monitoring, more general coaching and habit tracking for a broad employee population.
+[00:01:26] Monica: Exactly. Workouts, some nutrition logging if you have it, general activity. Nothing clinical, our population isn't in a supervised medical program.
+[00:01:40] Todd: We don't do nutrition logging today, just so that's clear upfront. Workouts, activity, and the coaching layer, yes.
+[00:01:52] Monica: That's fine, nutrition wasn't a dealbreaker, just a nice-to-have I was curious about.
+[00:02:02] Derek: Here's the thing that actually matters more to us — can this be white-labeled? Our employees know us, not some vendor's brand. An app that says "Ondera" instead of "BrightPath Wellness" is a harder sell internally to leadership.
+[00:02:24] Todd: We haven't shipped a white-label version yet, but the app architecture supports theming, so it's not a rebuild, it's a scoped project.
+[00:02:38] Monica: How scoped? Weeks, months?
+[00:02:43] Todd: I'd need to check with engineering before I commit to a number, I don't want to guess in front of you and be wrong.
+[00:02:53] Derek: Fair, we'd rather have an accurate answer next week than a fast wrong one today.
+[00:03:04] Monica: What would white-label pricing even look like, roughly? I know you can't give me a final number today either.
+[00:03:15] Todd: Also fair to defer, but I hear you that pricing and timeline are the two things you actually need before you can move this internally.
+[00:03:28] Derek: One more thing on our side — our current vendor's contract runs through the end of Q3. We're not necessarily blocked on switching before then, but budget-wise it's cleaner if a new contract starts right after.
+[00:03:48] Monica: Right, so realistically we're talking about a Q4 start for us, not tomorrow. That should take some pressure off the timeline question.
+[00:04:02] Todd: That's helpful context, thank you. So to summarize where we are — you need white-label, you need pricing for it, and your real-world start target is Q4 given the existing contract.
+[00:04:18] Monica: That's accurate.
+[00:04:21] Todd: I'll get pricing for the white-label option from our team and come back to you. Derek, can you send over when exactly in Q3 your current contract actually ends, just so I'm working with a real date and not "end of Q3" as a guess?
+[00:04:38] Derek: Yes, I'll dig up the exact date and send it today.
+[00:04:44] Todd: Perfect, that helps me plan realistically instead of assuming the worst case.
+[00:04:52] Monica: Sounds good. Let's reconnect once you have pricing, ideally in the next couple weeks.
+[00:05:03] Todd: I'll aim for two weeks. Thanks both, talk soon.
