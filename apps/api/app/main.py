@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import action_items, ask, health, meetings
+from app.routers import action_items, ask, health, meetings, traces
 
 settings = get_settings()
 
@@ -20,3 +20,4 @@ app.include_router(health.router)
 app.include_router(meetings.router)
 app.include_router(ask.router)
 app.include_router(action_items.router)
+app.include_router(traces.router)
