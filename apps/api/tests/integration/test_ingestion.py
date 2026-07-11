@@ -77,6 +77,30 @@ async def test_ingest_transcript_stores_meeting_and_chunks_with_embeddings() -> 
     assert len(fetched.chunks) == 16
 
 
+async def test_get_by_source_filename_returns_the_matching_meeting() -> None:
+    async with async_session_factory() as session:
+        meeting = await ingest_transcript(
+            filename=_SAMPLE_TRANSCRIPT.name,
+            raw_text=_SAMPLE_TRANSCRIPT.read_text(),
+            embedding_provider=FakeEmbeddingProvider(),
+            session=session,
+        )
+
+    async with async_session_factory() as session:
+        fetched = await MeetingRepository(session).get_by_source_filename(_SAMPLE_TRANSCRIPT.name)
+
+    assert fetched is not None
+    assert fetched.id == meeting.id
+    assert len(fetched.chunks) == 16
+
+
+async def test_get_by_source_filename_returns_none_when_no_meeting_matches() -> None:
+    async with async_session_factory() as session:
+        fetched = await MeetingRepository(session).get_by_source_filename("nonexistent.txt")
+
+    assert fetched is None
+
+
 async def test_ingest_transcript_rejects_a_filename_with_no_date_prefix() -> None:
     async with async_session_factory() as session:
         with pytest.raises(ValueError, match="YYYY-MM-DD"):
