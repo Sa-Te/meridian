@@ -60,3 +60,25 @@ class MeetingRepository:
             )
         )
         return result.scalar_one_or_none()
+
+    async def get_by_source_filename(self, source_filename: str) -> Meeting | None:
+        """Look up a Meeting by the transcript filename it was ingested from.
+
+        Used by eval/run_eval.py (see docs/adr/0009) to make repeated local
+        eval runs idempotent -- a transcript already ingested from a prior
+        run is reused rather than re-ingested into a duplicate Meeting.
+        source_filename has no uniqueness constraint at the schema level
+        (re-ingesting the same file twice is a valid, if unusual, action
+        elsewhere in the app), so this returns the first match rather than
+        asserting uniqueness.
+        """
+        result = await self._session.execute(
+            select(Meeting)
+            .where(Meeting.source_filename == source_filename)
+            .options(
+                selectinload(Meeting.chunks),
+                selectinload(Meeting.decisions),
+                selectinload(Meeting.action_items),
+            )
+        )
+        return result.scalars().first()

@@ -1,0 +1,199 @@
+[
+  {
+    "id": "df-1",
+    "category": "direct_fact",
+    "question": "What is the size, duration, and start timing of the pilot Ondera agreed to with Riverside Health Network?",
+    "expected_answer": "A ninety-day pilot with fifty patients at one Riverside site, targeting a Q2 start.",
+    "source_meeting_filename": "2026-01-14_discovery-call-riverside-health-network.txt",
+    "expected_supporting_quotes": [
+      "a ninety-day pilot, fifty patients, one Riverside site, starting Q2"
+    ]
+  },
+  {
+    "id": "df-2",
+    "category": "direct_fact",
+    "question": "How much did onboarding completion drop after the wearable connection step became mandatory?",
+    "expected_answer": "Completion dropped from sixty-one percent to forty-four percent, week over week.",
+    "source_meeting_filename": "2026-01-22_sprint-review-onboarding-flow.txt",
+    "expected_supporting_quotes": [
+      "Sixty-one percent to forty-four percent"
+    ]
+  },
+  {
+    "id": "df-3",
+    "category": "direct_fact",
+    "question": "Before the redesign, what was the original heart rate anomaly alert threshold?",
+    "expected_answer": "Any heart rate reading over one hundred sixty during a logged workout, a flat threshold.",
+    "source_meeting_filename": "2026-01-29_clinical-advisory-alert-thresholds.txt",
+    "expected_supporting_quotes": [
+      "any heart rate reading over one hundred sixty during a logged workout"
+    ]
+  },
+  {
+    "id": "df-4",
+    "category": "direct_fact",
+    "question": "How many logged workouts with heart rate data are needed before the system trusts a patient's personal baseline?",
+    "expected_answer": "At least five to seven logged workouts with heart rate data.",
+    "source_meeting_filename": "2026-01-29_clinical-advisory-alert-thresholds.txt",
+    "expected_supporting_quotes": [
+      "five to seven logged workouts with heart rate data"
+    ]
+  },
+  {
+    "id": "df-5",
+    "category": "direct_fact",
+    "question": "Roughly how many employees does BrightPath Corp have on its wellness benefit, and what was their engagement rate with their current vendor's app?",
+    "expected_answer": "About six thousand employees, with roughly eight percent monthly active engagement.",
+    "source_meeting_filename": "2026-02-12_discovery-call-brightpath-corp.txt",
+    "expected_supporting_quotes": [
+      "six thousand employees on the wellness benefit"
+    ]
+  },
+  {
+    "id": "df-6",
+    "category": "direct_fact",
+    "question": "How many lives does Alden Mutual Insurance cover in its commercial book?",
+    "expected_answer": "About two hundred thousand lives.",
+    "source_meeting_filename": "2026-03-13_discovery-call-alden-mutual-insurance.txt",
+    "expected_supporting_quotes": [
+      "two hundred thousand lives in our commercial book"
+    ]
+  },
+  {
+    "id": "dec-1",
+    "category": "decision",
+    "question": "What did the team decide about the mandatory wearable connection step in onboarding?",
+    "expected_answer": "Wearable connection becomes optional in onboarding, moved to a dismissible prompt, and remains available permanently under settings.",
+    "source_meeting_filename": "2026-01-22_sprint-review-onboarding-flow.txt",
+    "expected_supporting_quotes": [
+      "We make wearable connection optional in onboarding"
+    ]
+  },
+  {
+    "id": "dec-2",
+    "category": "decision",
+    "question": "What was decided about the WorkoutFeedback schema in the sprint 13 review?",
+    "expected_answer": "The schema is frozen as of that day; any future change must go through Dhruvisha as a deliberate proposal rather than an in-flight rename.",
+    "source_meeting_filename": "2026-02-05_sprint-review-workoutfeedback-schema.txt",
+    "expected_supporting_quotes": [
+      "schema is frozen as of today, and any future change is a proposal that goes through Dhruvisha",
+      "I think we should lock the WorkoutFeedback schema before the next sprint"
+    ]
+  },
+  {
+    "id": "dec-3",
+    "category": "decision",
+    "question": "What did the clinical advisory board decide about the heart rate anomaly alert logic?",
+    "expected_answer": "The alert logic moves from a flat one-hundred-sixty threshold to the patient's baseline plus forty percent, sustained for three minutes, with gaps under thirty seconds not resetting the clock.",
+    "source_meeting_filename": "2026-01-29_clinical-advisory-alert-thresholds.txt",
+    "expected_supporting_quotes": [
+      "the alert logic moves from a flat one hundred sixty threshold to patient baseline plus forty percent, sustained three minutes",
+      "we alert when heart rate exceeds the patient's baseline by forty percent, sustained for three full minutes"
+    ]
+  },
+  {
+    "id": "dec-4",
+    "category": "decision",
+    "question": "What did the team decide about the Riverside launch date after the sync bug was discovered?",
+    "expected_answer": "They delayed the launch by one week rather than launching with a known sync bug.",
+    "source_meeting_filename": "2026-03-06_sprint-review-pilot-readiness.txt",
+    "expected_supporting_quotes": [
+      "we delay by one week rather than launch with a known sync bug"
+    ]
+  },
+  {
+    "id": "dec-5",
+    "category": "decision",
+    "question": "What did the clinical advisory board decide about heart rate alert notification tiers?",
+    "expected_answer": "Two notification tiers instead of one: tier one is a calm in-app banner with no push, tier two is a push telling the patient to contact their care team.",
+    "source_meeting_filename": "2026-02-27_clinical-advisory-notification-copy-review.txt",
+    "expected_supporting_quotes": [
+      "the decision: two notification tiers, not one"
+    ]
+  },
+  {
+    "id": "dec-6",
+    "category": "decision",
+    "question": "What was the final go/no-go decision on the Riverside pilot launch?",
+    "expected_answer": "They went ahead with Monday's launch, conditional on Marcus giving a final written sign-off once the sync fix and notification tiering were verified clean in staging.",
+    "source_meeting_filename": "2026-03-20_clinical-advisory-pilot-safety-go-no-go.txt",
+    "expected_supporting_quotes": [
+      "we go ahead with Monday's launch, conditional on Marcus giving a final written sign-off"
+    ]
+  },
+  {
+    "id": "dec-7",
+    "category": "decision",
+    "question": "How did Ondera decide to prioritize engineering resources between the Riverside pilot and the BrightPath white-label request for Q2?",
+    "expected_answer": "Riverside pilot-readiness was prioritized for Q2, and BrightPath's white-label work was pushed to Q3.",
+    "source_meeting_filename": "2026-02-19_leadership-sync-roadmap-prioritization.txt",
+    "expected_supporting_quotes": [
+      "we prioritize Riverside pilot-readiness for Q2, full stop, and push white-label work to Q3"
+    ]
+  },
+  {
+    "id": "ai-1",
+    "category": "action_item",
+    "question": "Who was asked to send Raj the source behind the forty percent heart rate threshold figure, and by when?",
+    "expected_answer": "Dr. Vasquez, by the end of that week.",
+    "source_meeting_filename": "2026-01-29_clinical-advisory-alert-thresholds.txt",
+    "expected_supporting_quotes": [
+      "Dr. Vasquez, can you send Raj the source behind the forty percent figure this week"
+    ]
+  },
+  {
+    "id": "ai-2",
+    "category": "action_item",
+    "question": "After the Wednesday false-alert incident, who owns building the staging-mirrors-production smoke test, and how long will it take?",
+    "expected_answer": "Sam owns it, estimated at three days, and it becomes a required CI gate.",
+    "source_meeting_filename": "2026-04-10_retro-notification-incident-postmortem.txt",
+    "expected_supporting_quotes": [
+      "Sam owns the staging-mirrors-production alert smoke test, three days, added as a required CI gate"
+    ]
+  },
+  {
+    "id": "ai-3",
+    "category": "action_item",
+    "question": "Who committed to building the auto-purge job for the two-year raw biometric data retention policy?",
+    "expected_answer": "Priya.",
+    "source_meeting_filename": "2026-03-30_cross-functional-data-retention-policy.txt",
+    "expected_supporting_quotes": [
+      "I'll build the auto-purge job for the two-year raw data expiry"
+    ]
+  },
+  {
+    "id": "ai-4",
+    "category": "action_item",
+    "question": "Who committed to sending Riverside the current SOC 2 report, and when?",
+    "expected_answer": "Lena, that same afternoon.",
+    "source_meeting_filename": "2026-01-14_discovery-call-riverside-health-network.txt",
+    "expected_supporting_quotes": [
+      "I'll send it this afternoon",
+      "We can send you the SOC 2 report today"
+    ]
+  },
+  {
+    "id": "oos-1",
+    "category": "out_of_scope",
+    "question": "What is the capital of France?",
+    "expected_answer": "Not well-supported -- this topic is never discussed in any meeting transcript.",
+    "source_meeting_filename": null,
+    "expected_supporting_quotes": []
+  },
+  {
+    "id": "oos-2",
+    "category": "out_of_scope",
+    "question": "What programming language is the Ondera Coach mobile app written in?",
+    "expected_answer": "Not well-supported -- the transcripts discuss product, clinical, and business decisions, never implementation languages or tech stack.",
+    "source_meeting_filename": null,
+    "expected_supporting_quotes": []
+  },
+  {
+    "id": "oos-3",
+    "category": "out_of_scope",
+    "question": "How much does Ondera Coach cost per patient per month?",
+    "expected_answer": "Not well-supported -- pricing is repeatedly deferred or promised for later in the transcripts, but no actual price figure is ever stated.",
+    "source_meeting_filename": null,
+    "expected_supporting_quotes": []
+  }
+]
