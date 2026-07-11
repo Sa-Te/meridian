@@ -104,3 +104,29 @@ class IngestResponse(BaseModel):
 
     meeting_id: uuid.UUID
     chunk_count: int
+
+
+class AskRequest(BaseModel):
+    """Request body for POST /ask and POST /meetings/{id}/ask."""
+
+    question: str = Field(min_length=1)
+
+
+class CitationRead(BaseModel):
+    """A single supporting chunk cited in an AskResponse. Fields other than
+    chunk_id are looked up server-side from the retrieved chunk, not taken
+    from the LLM's response -- see docs/adr/0007."""
+
+    chunk_id: uuid.UUID
+    meeting_id: uuid.UUID
+    speaker: str
+    start_ts: int
+    end_ts: int
+
+
+class AskResponse(BaseModel):
+    """Response shape for POST /ask and POST /meetings/{id}/ask."""
+
+    answer: str
+    supported: bool
+    citations: list[CitationRead]
