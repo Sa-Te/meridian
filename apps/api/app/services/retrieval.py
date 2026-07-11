@@ -33,10 +33,19 @@ class FusedResult:
 
 @dataclass(frozen=True)
 class RetrievedChunk:
-    """A fully-hydrated Chunk plus its fusion score, ready for generation."""
+    """A fully-hydrated Chunk plus its fusion score, ready for generation.
+
+    vector_score/text_score are the *raw*, pre-normalization signals for
+    this chunk (None if it wasn't found by that method) -- carried
+    alongside fused_score because the output guardrail's confidence
+    threshold (docs/adr/0008) needs the absolute-scale raw score, not the
+    pool-relative normalized one used for ranking.
+    """
 
     chunk: Chunk
     fused_score: float
+    vector_score: float | None
+    text_score: float | None
 
 
 def _normalize(raw_scores: dict[UUID, float]) -> dict[UUID, float]:
@@ -130,6 +139,11 @@ async def hybrid_search(
     fused = fuse_scores(candidate_scores, vector_weight=vector_weight, text_weight=text_weight)
 
     return [
-        RetrievedChunk(chunk=chunks_by_id[result.chunk_id], fused_score=result.fused_score)
+        RetrievedChunk(
+            chunk=chunks_by_id[result.chunk_id],
+            fused_score=result.fused_score,
+            vector_score=vector_scores.get(result.chunk_id),
+            text_score=text_scores.get(result.chunk_id),
+        )
         for result in fused[:top_k]
     ]

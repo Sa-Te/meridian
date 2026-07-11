@@ -18,6 +18,8 @@ from pydantic import BaseModel, ValidationError
 
 from app.models.orm import Chunk
 from app.providers.llm.base import LLMMessage, LLMProvider
+from app.services.guardrails.output_guardrail import citation_ids_are_valid
+from app.services.llm_json import strip_code_fence
 
 UNSUPPORTED_ANSWER = (
     "I could not find a well-supported answer to this question in the available transcripts."
@@ -76,16 +78,6 @@ def _build_user_prompt(question: str, chunks: Sequence[Chunk]) -> str:
     return f"Transcript excerpts:\n\n{excerpts}\n\nQuestion: {question}"
 
 
-def _strip_code_fence(text: str) -> str:
-    """Some models wrap JSON in a ```json ... ``` fence despite instructions
-    not to. Strip one if present; otherwise return the text unchanged."""
-    if not text.startswith("```"):
-        return text
-    lines = text.split("\n")
-    lines = lines[1:-1] if lines[-1].strip() == "```" else lines[1:]
-    return "\n".join(lines).strip()
-
-
 def _parse_response(raw_text: str, valid_chunk_ids: set[uuid.UUID]) -> AnswerResult | None:
     """Parse and guardrail-check a raw LLM response. Returns None on any
     guardrail failure: malformed JSON, a schema mismatch, a "supported"
@@ -93,7 +85,7 @@ def _parse_response(raw_text: str, valid_chunk_ids: set[uuid.UUID]) -> AnswerRes
     actually retrieved.
     """
     try:
-        payload = _LLMAnswerPayload.model_validate(json.loads(_strip_code_fence(raw_text.strip())))
+        payload = _LLMAnswerPayload.model_validate(json.loads(strip_code_fence(raw_text.strip())))
     except (json.JSONDecodeError, ValidationError):
         return None
 
@@ -101,7 +93,7 @@ def _parse_response(raw_text: str, valid_chunk_ids: set[uuid.UUID]) -> AnswerRes
         return AnswerResult(answer=payload.answer, supported=False, citations=[])
 
     cited_ids = [citation.chunk_id for citation in payload.citations]
-    if not cited_ids or not set(cited_ids).issubset(valid_chunk_ids):
+    if not citation_ids_are_valid(cited_ids, valid_chunk_ids):
         return None
 
     unique_ids = list(dict.fromkeys(cited_ids))

@@ -11,7 +11,8 @@ from app.providers.embedding.base import EmbeddingProvider
 from app.providers.llm.base import LLMProvider
 from app.repositories.chunk_repository import ChunkRepository
 from app.repositories.meeting_repository import MeetingRepository
-from app.services.answer_generation import generate_answer
+from app.services.answer_generation import UNSUPPORTED_ANSWER, generate_answer
+from app.services.guardrails.output_guardrail import passes_retrieval_confidence
 from app.services.retrieval import hybrid_search
 
 router = APIRouter(tags=["ask"])
@@ -37,6 +38,11 @@ async def _ask(
         vector_weight=settings.retrieval_vector_weight,
         text_weight=settings.retrieval_text_weight,
     )
+    if not passes_retrieval_confidence(
+        retrieved, threshold=settings.retrieval_confidence_threshold
+    ):
+        return AskResponse(answer=UNSUPPORTED_ANSWER, supported=False, citations=[])
+
     chunks_by_id = {r.chunk.id: r.chunk for r in retrieved}
 
     result = await generate_answer(

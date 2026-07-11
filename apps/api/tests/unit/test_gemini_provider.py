@@ -1,5 +1,8 @@
+import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
+
+from pydantic import BaseModel
 
 from app.providers.llm.base import LLMMessage
 from app.providers.llm.gemini_provider import GeminiLLMProvider
@@ -79,3 +82,29 @@ async def test_generate_returns_empty_string_for_no_text() -> None:
     result = await provider.generate([LLMMessage(role="user", content="hi")])
 
     assert result.text == ""
+
+
+class _Greeting(BaseModel):
+    message: str
+    confidence: float
+
+
+async def test_generate_structured_passes_response_schema_and_validates_result() -> None:
+    provider = _provider()
+    response = _fake_response(text=json.dumps({"message": "hi there", "confidence": 0.9}))
+    provider._client.aio.models.generate_content = AsyncMock(return_value=response)
+
+    result = await provider.generate_structured(
+        "Greet the user.", _Greeting, system="be friendly", max_tokens=64, temperature=0.2
+    )
+
+    assert result == _Greeting(message="hi there", confidence=0.9)
+
+    call = provider._client.aio.models.generate_content.call_args
+    assert call.kwargs["contents"] == "Greet the user."
+    config = call.kwargs["config"]
+    assert config.system_instruction == "be friendly"
+    assert config.max_output_tokens == 64
+    assert config.temperature == 0.2
+    assert config.response_mime_type == "application/json"
+    assert config.response_schema is _Greeting

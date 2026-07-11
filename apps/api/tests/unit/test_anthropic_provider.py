@@ -1,6 +1,9 @@
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+import pytest
+from pydantic import BaseModel
+
 from app.providers.llm.anthropic_provider import AnthropicLLMProvider
 from app.providers.llm.base import LLMMessage
 
@@ -72,3 +75,14 @@ async def test_generate_joins_multiple_text_blocks_and_skips_non_text() -> None:
     result = await provider.generate([LLMMessage(role="user", content="hi")])
 
     assert result.text == "ab"
+
+
+class _Greeting(BaseModel):
+    message: str
+
+
+async def test_generate_structured_raises_not_implemented() -> None:
+    provider = _provider()
+
+    with pytest.raises(NotImplementedError):
+        await provider.generate_structured("Greet the user.", _Greeting)
