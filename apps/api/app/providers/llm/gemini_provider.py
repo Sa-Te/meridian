@@ -41,7 +41,13 @@ class GeminiLLMProvider(LLMProvider):
 
         response = await self._client.aio.models.generate_content(
             model=self._model,
-            contents=contents,
+            # list[Content] structurally satisfies generate_content's
+            # overloaded `contents` union at runtime, but mypy's invariant
+            # list typing rejects it against that union's more specific
+            # list[...] arms -- a false positive against the vendor SDK's
+            # typing, not a real bug (google-genai bumped past 2.0 with a
+            # more complex overload set since this was first written).
+            contents=contents,  # type: ignore[arg-type]
             config=config,
         )
 

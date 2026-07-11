@@ -7,6 +7,11 @@ COPY app ./app
 COPY alembic.ini ./
 COPY alembic ./alembic
 
+# Installed first, from the CPU-only wheel index: plain `pip install .`
+# would otherwise pull in torch's default CUDA build as a transitive
+# dependency of sentence-transformers (ADR-0004's local embedding model),
+# adding several GB of GPU libraries this CPU-only container never uses.
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir .
 
 EXPOSE 8000
