@@ -1,9 +1,10 @@
 import uuid
 from datetime import date, datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.orm import ActionItemStatus
+from app.models.orm import ActionItemStatus, TraceOutcome
 
 
 class MeetingCreate(BaseModel):
@@ -143,3 +144,38 @@ class AskResponse(BaseModel):
     answer: str
     supported: bool
     citations: list[CitationRead]
+
+
+class TraceStageRead(BaseModel):
+    """One recorded stage within a Trace. See docs/adr/0010."""
+
+    name: str
+    started_at: datetime
+    duration_ms: float
+    metadata: dict[str, Any]
+
+
+class TraceRead(BaseModel):
+    """API response shape for a Trace. See docs/adr/0010."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    endpoint: str
+    stages: list[TraceStageRead]
+    total_duration_ms: float
+    input_tokens: int
+    output_tokens: int
+    models_used: list[str]
+    outcome: TraceOutcome
+    created_at: datetime
+
+
+class TraceListResponse(BaseModel):
+    """Response shape for GET /traces: one page of traces plus enough to
+    page further."""
+
+    items: list[TraceRead]
+    total: int
+    limit: int
+    offset: int

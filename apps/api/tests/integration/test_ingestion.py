@@ -14,7 +14,7 @@ from sqlalchemy import delete
 from app.db import async_session_factory, engine
 from app.dependencies import get_cached_embedding_provider, get_cached_llm_provider
 from app.main import app
-from app.models.orm import Meeting
+from app.models.orm import Meeting, Trace
 from app.repositories.meeting_repository import MeetingRepository
 from app.services.extraction import _LLMExtractionPayload
 from app.services.ingestion import ingest_transcript
@@ -48,6 +48,7 @@ async def _clean_meetings_table() -> None:
     yield
     async with engine.begin() as connection:
         await connection.execute(delete(Meeting))
+        await connection.execute(delete(Trace))
 
 
 async def test_ingest_transcript_stores_meeting_and_chunks_with_embeddings() -> None:

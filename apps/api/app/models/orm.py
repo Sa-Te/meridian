@@ -2,6 +2,7 @@ import uuid
 from datetime import date as date_type
 from datetime import datetime
 from enum import StrEnum
+from typing import Any
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
@@ -18,7 +19,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, TSVECTOR, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Output dimensionality of BAAI/bge-base-en-v1.5, the default EmbeddingProvider
@@ -176,3 +177,47 @@ class ActionItem(Base):
 
     meeting: Mapped["Meeting"] = relationship(back_populates="action_items")
     source_chunk: Mapped["Chunk"] = relationship(back_populates="action_items")
+
+
+class TraceOutcome(StrEnum):
+    ANSWERED = "answered"
+    DECLINED = "declined"
+    ERROR = "error"
+
+
+class Trace(Base):
+    """A structured record of one traced request: the ask flow (Phase 3) or
+    the ingest+extraction flow (Phase 2/4). See docs/adr/0010.
+
+    There is no separate "request id" field -- a Trace row corresponds 1:1
+    to one request, so its own primary key already serves that purpose.
+
+    stages is a JSONB list of {name, started_at, duration_ms, metadata}
+    dicts rather than a normalized child table -- see docs/adr/0010 for why
+    a handful of stages per request doesn't earn its own table.
+    """
+
+    __tablename__ = "traces"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    endpoint: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    stages: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False, default=list)
+    total_duration_ms: Mapped[float] = mapped_column(Float, nullable=False)
+    input_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # Every model actually invoked while producing this trace -- see
+    # docs/adr/0010 for why this is populated even for generate_structured
+    # calls (extraction), which unlike generate() carry no per-call usage.
+    models_used: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
+    outcome: Mapped[TraceOutcome] = mapped_column(
+        Enum(
+            TraceOutcome,
+            name="trace_outcome",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
+    )

@@ -16,7 +16,7 @@ from sqlalchemy import delete
 from app.db import async_session_factory, engine
 from app.dependencies import get_cached_embedding_provider, get_cached_llm_provider
 from app.main import app
-from app.models.orm import Meeting
+from app.models.orm import Meeting, Trace
 from app.services.ingestion import ingest_transcript
 from tests.fakes import FakeEmbeddingProvider, FakeLLMProvider
 
@@ -33,6 +33,7 @@ async def _clean_meetings_table() -> None:
     yield
     async with engine.begin() as connection:
         await connection.execute(delete(Meeting))
+        await connection.execute(delete(Trace))
 
 
 def _override_providers(llm: FakeLLMProvider) -> None:
