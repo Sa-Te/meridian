@@ -14,6 +14,9 @@ dependencies = [
     "alembic>=1.13",
     "asyncpg>=0.29",
     "pgvector>=0.3",
+    "sentence-transformers>=3.0",
+    "voyageai>=0.3",
+    "python-multipart>=0.0.9",
 ]
 
 [project.optional-dependencies]
@@ -41,6 +44,12 @@ extend-exclude = ["alembic/versions"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's dependency-injection convention is exactly the "function call
+# in a default argument" pattern B008 normally flags -- these are the
+# framework-standard callables, not a real mutable-default bug.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.File", "fastapi.Query", "fastapi.Body"]
 
 [tool.mypy]
 python_version = "3.12"

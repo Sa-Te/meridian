@@ -97,3 +97,10 @@ class ActionItemRead(BaseModel):
     confidence: float
     status: ActionItemStatus
     created_at: datetime
+
+
+class IngestResponse(BaseModel):
+    """Response shape for POST /meetings/ingest."""
+
+    meeting_id: uuid.UUID
+    chunk_count: int

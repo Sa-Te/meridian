@@ -32,6 +32,10 @@ services:
     env_file: .env
     ports:
       - "${API_PORT:-8000}:8000"
+    volumes:
+      # Caches the local embedding model (ADR-0004) across container
+      # restarts/rebuilds so it isn't re-downloaded (~440MB) every time.
+      - hf_cache:/root/.cache/huggingface
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,3 +61,4 @@ services:
 
 volumes:
   postgres_data:
+  hf_cache:

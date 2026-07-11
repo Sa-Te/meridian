@@ -49,6 +49,19 @@ class Settings(BaseSettings):
         description="Anthropic model used only when LLM_PROVIDER=anthropic.",
     )
 
+    embedding_provider: str = Field(
+        default="local",
+        description="Active EmbeddingProvider implementation: 'local' or 'voyage'. See ADR-0004.",
+    )
+    voyage_api_key: str | None = Field(
+        default=None,
+        description="Required when EMBEDDING_PROVIDER=voyage; not on the default code path.",
+    )
+    voyage_model: str = Field(
+        default="voyage-3-lite",
+        description="Voyage embedding model used only when EMBEDDING_PROVIDER=voyage.",
+    )
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
