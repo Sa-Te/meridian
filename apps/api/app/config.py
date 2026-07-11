@@ -81,6 +81,19 @@ class Settings(BaseSettings):
         description="Weight given to the normalized full-text rank score during "
         "fusion. See ADR-0007.",
     )
+    retrieval_confidence_threshold: float = Field(
+        default=0.3,
+        description="Minimum raw cosine similarity a retrieved chunk must reach, when "
+        "no chunk also has a full-text match, before the ask flow will attempt an "
+        "answer at all. Below this, the system declines rather than guessing. A "
+        "starting heuristic pending Phase 5 eval-based tuning. See ADR-0008.",
+    )
+    extraction_confidence_threshold: float = Field(
+        default=0.5,
+        description="Minimum self-reported confidence for an extracted Decision or "
+        "ActionItem to be persisted; lower-confidence items are dropped rather than "
+        "recorded as fact. See ADR-0008.",
+    )
 
     @property
     def cors_origins_list(self) -> list[str]:

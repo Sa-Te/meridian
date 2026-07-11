@@ -99,11 +99,24 @@ class ActionItemRead(BaseModel):
     created_at: datetime
 
 
+class PromptInjectionFindingRead(BaseModel):
+    """One prompt-injection-style match found in a transcript chunk during
+    ingestion's input guardrail scan. See docs/adr/0008."""
+
+    chunk_index: int
+    pattern: str
+    matched_text: str
+
+
 class IngestResponse(BaseModel):
     """Response shape for POST /meetings/ingest."""
 
     meeting_id: uuid.UUID
     chunk_count: int
+    decision_count: int
+    action_item_count: int
+    flagged_for_prompt_injection: bool
+    prompt_injection_findings: list[PromptInjectionFindingRead]
 
 
 class AskRequest(BaseModel):

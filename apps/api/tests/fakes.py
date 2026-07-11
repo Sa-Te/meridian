@@ -1,7 +1,9 @@
 """Shared test doubles, importable from both tests/unit and tests/integration."""
 
+from pydantic import BaseModel
+
 from app.providers.embedding.base import EmbeddingProvider
-from app.providers.llm.base import LLMMessage, LLMProvider, LLMResponse
+from app.providers.llm.base import LLMMessage, LLMProvider, LLMResponse, SchemaT
 
 
 class FakeEmbeddingProvider(EmbeddingProvider):
@@ -33,14 +35,26 @@ class FakeEmbeddingProvider(EmbeddingProvider):
 class FakeLLMProvider(LLMProvider):
     """A scripted LLMProvider for tests that shouldn't need a real API call.
 
-    Returns `responses` in order, one per `generate` call; once exhausted,
-    repeats the last response. Records every call's messages for assertions
-    on retry behavior.
+    Returns `responses` in order, one per `generate` call, and separately
+    `structured_responses` in order, one per `generate_structured` call;
+    once exhausted, each repeats its own last response. Records every
+    call's messages/prompts for assertions on retry behavior. An entry in
+    `structured_responses` may be an Exception instance instead of a
+    BaseModel, to simulate a generate_structured failure (e.g. a truncated
+    or non-conforming response) for retry-path tests.
     """
 
-    def __init__(self, responses: list[str]) -> None:
-        self._responses = list(responses)
+    def __init__(
+        self,
+        responses: list[str] | None = None,
+        structured_responses: list[BaseModel | Exception] | None = None,
+    ) -> None:
+        self._responses = list(responses) if responses is not None else []
+        self._structured_responses = (
+            list(structured_responses) if structured_responses is not None else []
+        )
         self.calls: list[list[LLMMessage]] = []
+        self.structured_calls: list[str] = []
 
     async def generate(
         self,
@@ -55,3 +69,20 @@ class FakeLLMProvider(LLMProvider):
         return LLMResponse(
             text=self._responses[index], model="fake-model", input_tokens=0, output_tokens=0
         )
+
+    async def generate_structured(
+        self,
+        prompt: str,
+        response_model: type[SchemaT],
+        *,
+        system: str | None = None,
+        max_tokens: int = 1024,
+        temperature: float = 0.0,
+    ) -> SchemaT:
+        self.structured_calls.append(prompt)
+        index = min(len(self.structured_calls) - 1, len(self._structured_responses) - 1)
+        response = self._structured_responses[index]
+        if isinstance(response, Exception):
+            raise response
+        assert isinstance(response, response_model)
+        return response

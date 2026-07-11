@@ -2,7 +2,7 @@ from typing import Any
 
 from anthropic import AsyncAnthropic
 
-from app.providers.llm.base import LLMMessage, LLMProvider, LLMResponse
+from app.providers.llm.base import LLMMessage, LLMProvider, LLMResponse, SchemaT
 
 DEFAULT_MODEL = "claude-sonnet-5"
 
@@ -45,4 +45,32 @@ class AnthropicLLMProvider(LLMProvider):
             model=response.model,
             input_tokens=response.usage.input_tokens,
             output_tokens=response.usage.output_tokens,
+        )
+
+    async def generate_structured(
+        self,
+        prompt: str,
+        response_model: type[SchemaT],
+        *,
+        system: str | None = None,
+        max_tokens: int = 1024,
+        temperature: float = 0.0,
+    ) -> SchemaT:
+        """Not implemented. The Anthropic equivalent of Gemini's
+        response_schema mode is forced tool use (defining a tool whose
+        input_schema mirrors response_model and setting
+        tool_choice={"type": "tool", "name": ...}), which is a genuinely
+        different code path worth its own test coverage against a live
+        Anthropic response -- not something to write blind. This project's
+        own testing standard (CLAUDE.md Section 2: every module gets real
+        tests in the same change that introduces it) is the reason this
+        is a deliberate gap rather than an untested implementation. See
+        docs/adr/0008. Implementing this is a "with more time" item -- it
+        needs a working ANTHROPIC_API_KEY to build and verify against.
+        """
+        raise NotImplementedError(
+            "AnthropicLLMProvider.generate_structured is not implemented. "
+            "It requires an Anthropic tool-use implementation verified against "
+            "a live API key, which wasn't available while building this. "
+            "Extraction (the only current caller) requires LLM_PROVIDER=gemini."
         )

@@ -1,7 +1,7 @@
 from google import genai
 from google.genai import types as genai_types
 
-from app.providers.llm.base import LLMMessage, LLMProvider, LLMResponse
+from app.providers.llm.base import LLMMessage, LLMProvider, LLMResponse, SchemaT
 
 DEFAULT_MODEL = "gemini-3.1-flash-lite"
 
@@ -58,3 +58,36 @@ class GeminiLLMProvider(LLMProvider):
             input_tokens=usage.prompt_token_count or 0 if usage else 0,
             output_tokens=usage.candidates_token_count or 0 if usage else 0,
         )
+
+    async def generate_structured(
+        self,
+        prompt: str,
+        response_model: type[SchemaT],
+        *,
+        system: str | None = None,
+        max_tokens: int = 1024,
+        temperature: float = 0.0,
+    ) -> SchemaT:
+        """Uses Gemini's native structured-output mode: passing a Pydantic
+        model class as response_schema constrains the model's decoding to
+        that JSON shape. The response is still re-validated on our side via
+        response_model.model_validate_json rather than trusted as-is -- the
+        same "the vendor's own conformance guarantee isn't the only check"
+        posture as the plain-JSON citation guardrail in
+        app/services/answer_generation.py.
+        """
+        config = genai_types.GenerateContentConfig(
+            system_instruction=system,
+            max_output_tokens=max_tokens,
+            temperature=temperature,
+            response_mime_type="application/json",
+            response_schema=response_model,
+        )
+
+        response = await self._client.aio.models.generate_content(
+            model=self._model,
+            contents=prompt,
+            config=config,
+        )
+
+        return response_model.model_validate_json(response.text or "")
