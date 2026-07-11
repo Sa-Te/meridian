@@ -62,6 +62,26 @@ class Settings(BaseSettings):
         description="Voyage embedding model used only when EMBEDDING_PROVIDER=voyage.",
     )
 
+    retrieval_top_k: int = Field(
+        default=8,
+        description="Number of fused chunks passed to the LLM for answer generation. See ADR-0007.",
+    )
+    retrieval_candidate_pool_size: int = Field(
+        default=25,
+        description="Number of candidates fetched from each of vector search and "
+        "full-text search before fusion. See ADR-0007.",
+    )
+    retrieval_vector_weight: float = Field(
+        default=0.6,
+        description="Weight given to the normalized cosine-similarity score during "
+        "fusion. See ADR-0007.",
+    )
+    retrieval_text_weight: float = Field(
+        default=0.4,
+        description="Weight given to the normalized full-text rank score during "
+        "fusion. See ADR-0007.",
+    )
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]

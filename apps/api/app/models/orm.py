@@ -6,6 +6,7 @@ from enum import StrEnum
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     CheckConstraint,
+    Computed,
     Date,
     DateTime,
     Enum,
@@ -17,7 +18,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, TSVECTOR, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Output dimensionality of BAAI/bge-base-en-v1.5, the default EmbeddingProvider
@@ -86,6 +87,11 @@ class Chunk(Base):
         Vector(EMBEDDING_DIMENSIONS), nullable=True
     )
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    # DB-generated from `text` (see the Phase 3 migration); never set by the
+    # ORM. Powers the full-text side of hybrid retrieval -- see ADR-0007.
+    search_vector: Mapped[str | None] = mapped_column(
+        TSVECTOR, Computed("to_tsvector('english', text)", persisted=True), nullable=True
+    )
 
     meeting: Mapped["Meeting"] = relationship(back_populates="chunks")
     # passive_deletes=True: don't have the ORM try to null out source_chunk_id
