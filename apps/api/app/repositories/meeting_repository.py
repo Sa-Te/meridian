@@ -61,6 +61,16 @@ class MeetingRepository:
         )
         return result.scalar_one_or_none()
 
+    async def list_all(self) -> list[Meeting]:
+        """All meetings, newest first, for the meeting picker (GET /meetings,
+        Phase 7). No eager-loading of chunks/decisions/action_items --
+        MeetingSummaryRead only needs top-level Meeting fields, and loading
+        every meeting's full chunk set here would be wasteful for a list
+        view nobody needs full detail from.
+        """
+        result = await self._session.execute(select(Meeting).order_by(Meeting.created_at.desc()))
+        return list(result.scalars().all())
+
     async def get_by_source_filename(self, source_filename: str) -> Meeting | None:
         """Look up a Meeting by the transcript filename it was ingested from.
 

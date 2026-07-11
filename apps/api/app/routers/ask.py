@@ -93,6 +93,7 @@ async def _ask(
                 speaker=chunk.speaker,
                 start_ts=chunk.start_ts,
                 end_ts=chunk.end_ts,
+                text=chunk.text,
             )
             for citation in result.citations
             if (chunk := chunks_by_id.get(citation.chunk_id)) is not None

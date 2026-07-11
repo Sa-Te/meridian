@@ -1,26 +1,84 @@
 @import "tailwindcss";
 
+/* Glass / neumorphic design tokens -- see CLAUDE.md Section 3.
+   One restrained accent (muted teal), everything else near-monochrome
+   grey. No neon, no decorative gradients beyond the base page wash. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --background-start: #eef2f2;
+  --background-end: #e6edec;
+  --foreground: #1b2426;
+  --muted-foreground: #5b6c6e;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --surface: rgba(255, 255, 255, 0.6);
+  --surface-solid: #f8fafa;
+  --border-color: rgba(27, 36, 38, 0.09);
+
+  --accent: #2f6f6a;
+  --accent-strong: #245854;
+  --accent-foreground: #f3faf9;
+  --accent-soft: rgba(47, 111, 106, 0.1);
+
+  --danger: #9a4a3f;
+  --danger-soft: rgba(154, 74, 63, 0.1);
+
+  --shadow-glass:
+    0 1px 1px rgba(20, 30, 32, 0.04),
+    0 8px 20px rgba(20, 30, 32, 0.07);
+  --shadow-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background-start: #10181a;
+    --background-end: #0b1213;
+    --foreground: #e7edec;
+    --muted-foreground: #93a5a5;
+
+    --surface: rgba(255, 255, 255, 0.045);
+    --surface-solid: #131c1e;
+    --border-color: rgba(255, 255, 255, 0.08);
+
+    --accent: #59a89f;
+    --accent-strong: #7fc1b8;
+    --accent-foreground: #08110f;
+    --accent-soft: rgba(89, 168, 159, 0.14);
+
+    --danger: #d98a7a;
+    --danger-soft: rgba(217, 138, 122, 0.14);
+
+    --shadow-glass:
+      0 1px 1px rgba(0, 0, 0, 0.35),
+      0 10px 24px rgba(0, 0, 0, 0.4);
+    --shadow-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
 }
 
+@theme inline {
+  --color-background: var(--background-start);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-surface: var(--surface);
+  --color-surface-solid: var(--surface-solid);
+  --color-border: var(--border-color);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, var(--background-end), transparent),
+    linear-gradient(180deg, var(--background-start), var(--background-end));
+  background-attachment: fixed;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+* {
+  border-color: var(--border-color);
 }

@@ -75,6 +75,11 @@ async def test_get_meeting_decisions_returns_seeded_decision() -> None:
     assert len(body) == 1
     assert body[0]["id"] == str(decision_id)
     assert body[0]["text"] == "Ship the new threshold."
+    citation = body[0]["source_citation"]
+    assert citation["speaker"] == "Dr. Vasquez"
+    assert citation["text"] == "hello"
+    assert citation["start_ts"] == 0
+    assert citation["meeting_id"] == str(meeting_id)
 
 
 async def test_get_meeting_action_items_returns_seeded_action_item() -> None:
@@ -90,6 +95,8 @@ async def test_get_meeting_action_items_returns_seeded_action_item() -> None:
     assert body[0]["id"] == str(action_item_id)
     assert body[0]["owner"] == "Dr. Vasquez"
     assert body[0]["status"] == "open"
+    assert body[0]["source_citation"]["speaker"] == "Dr. Vasquez"
+    assert body[0]["source_citation"]["text"] == "hello"
 
 
 async def test_get_meeting_decisions_404s_for_unknown_meeting() -> None:
@@ -136,3 +143,9 @@ async def test_global_action_items_filters_by_status_and_owner() -> None:
     assert {item["id"] for item in all_items.json()} == {str(open_item_id), str(done_item_id)}
     assert [item["id"] for item in open_only.json()] == [str(open_item_id)]
     assert [item["id"] for item in naomi_only.json()] == [str(done_item_id)]
+    # The global list spans two different meetings' chunks -- confirms
+    # source_citation resolves correctly regardless of which meeting an
+    # item belongs to, not just the single-meeting case above.
+    naomi_item = naomi_only.json()[0]
+    assert naomi_item["source_citation"]["text"] == "hello again"
+    assert naomi_item["source_citation"]["speaker"] == "Naomi"

@@ -7,6 +7,7 @@ boundaries, not read queries. See docs/adr/0008.
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.orm import ActionItem, ActionItemStatus
 
@@ -18,7 +19,11 @@ class ActionItemRepository:
     async def list(
         self, *, status: ActionItemStatus | None = None, owner: str | None = None
     ) -> list[ActionItem]:
-        stmt = select(ActionItem)
+        # Eager-loads source_chunk so the router can build each item's
+        # source_citation (Phase 7) without a lazy-load, which isn't safe
+        # from an async context -- same reasoning as MeetingRepository's
+        # eager-loaded relationships.
+        stmt = select(ActionItem).options(selectinload(ActionItem.source_chunk))
         if status is not None:
             stmt = stmt.where(ActionItem.status == status)
         if owner is not None:
