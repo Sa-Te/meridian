@@ -76,8 +76,7 @@ async def test_ask_meeting_with_known_answer_returns_correct_citation() -> None:
                 f"/meetings/{meeting.id}/ask",
                 json={
                     "question": (
-                        "Logged workouts with heart rate data before we trust a "
-                        "personal baseline?"
+                        "Logged workouts with heart rate data before we trust a personal baseline?"
                     )
                 },
             )

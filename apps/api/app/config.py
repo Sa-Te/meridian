@@ -64,8 +64,7 @@ class Settings(BaseSettings):
 
     retrieval_top_k: int = Field(
         default=8,
-        description="Number of fused chunks passed to the LLM for answer generation. "
-        "See ADR-0007.",
+        description="Number of fused chunks passed to the LLM for answer generation. See ADR-0007.",
     )
     retrieval_candidate_pool_size: int = Field(
         default=25,
