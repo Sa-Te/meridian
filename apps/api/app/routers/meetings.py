@@ -126,6 +126,15 @@ async def get_meeting(
     return MeetingSummaryRead.model_validate(meeting)
 
 
+@router.delete("/{meeting_id}", status_code=204)
+async def delete_meeting(meeting_id: UUID, session: AsyncSession = Depends(get_db)) -> None:
+    repository = MeetingRepository(session)
+    meeting = await repository.get_by_id(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    await repository.delete(meeting)
+
+
 @router.get("/{meeting_id}/decisions", response_model=list[DecisionRead])
 async def get_meeting_decisions(
     meeting_id: UUID,

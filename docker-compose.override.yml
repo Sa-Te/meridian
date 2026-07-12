@@ -1,0 +1,36 @@
+# Local dev overrides. Docker Compose auto-merges a file named exactly
+# this alongside docker-compose.yml on a plain `docker compose up` -- no
+# -f flag needed. Bind-mounts source into api/web and swaps each one's
+# production command for a dev/reload command, so editing code on the
+# host shows up in the running container without an image rebuild. The
+# Dockerfiles' production CMDs are untouched; this file only changes what
+# runs locally.
+
+services:
+  api:
+    volumes:
+      # Only app/ needs to be live -- alembic/pyproject.toml change rarely
+      # enough that a rebuild for those is fine, and this keeps the mount
+      # narrowly scoped to what uvicorn's reloader actually needs to watch.
+      - ./apps/api/app:/app/app
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  web:
+    volumes:
+      - ./apps/web:/app
+      # Anonymous volumes so the bind mount above doesn't shadow the
+      # container's own npm-ci'd node_modules and .next build cache with
+      # whatever (or nothing) exists on the host. This matters beyond the
+      # usual Node-in-Docker reasoning: Next.js's bundler can panic on a
+      # node_modules that's a symlink pointing outside the project root
+      # (a real WSL performance workaround hit on this exact host before),
+      # so the container must always manage its own copy, never the
+      # host's, regardless of what node_modules looks like on the host.
+      - /app/node_modules
+      - /app/.next
+    environment:
+      # The Dockerfile's runner stage bakes in NODE_ENV=production for the
+      # baked image; `next dev` wants development explicitly rather than
+      # inheriting that.
+      NODE_ENV: development
+    command: npm run dev

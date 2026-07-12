@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Card } from "@/app/components/ui/Card";
 import { Panel } from "@/app/components/ui/Panel";
+import { MeetingIngestUpload } from "@/app/components/meetings/MeetingIngestUpload";
 import { listMeetings, toErrorMessage } from "@/app/lib/api/client";
 import type { MeetingSummary } from "@/app/lib/api/types";
 
@@ -12,6 +13,9 @@ export function MeetingsListView() {
   const [meetings, setMeetings] = useState<MeetingSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Bumped after a successful ingest to re-run the fetch effect below,
+  // so a newly ingested meeting shows up without a manual page reload.
+  const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,6 +47,10 @@ export function MeetingsListView() {
     return () => {
       cancelled = true;
     };
+  }, [refreshToken]);
+
+  const handleIngested = useCallback(() => {
+    setRefreshToken((token) => token + 1);
   }, []);
 
   return (
@@ -53,6 +61,8 @@ export function MeetingsListView() {
           Browse ingested meetings to review their decisions and action items.
         </p>
       </Panel>
+
+      <MeetingIngestUpload onIngested={handleIngested} />
 
       {loading && <p className="text-sm text-muted-foreground">Loading meetings...</p>}
       {error && <p className="text-sm text-danger">{error}</p>}

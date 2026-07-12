@@ -71,6 +71,16 @@ class MeetingRepository:
         result = await self._session.execute(select(Meeting).order_by(Meeting.created_at.desc()))
         return list(result.scalars().all())
 
+    async def delete(self, meeting: Meeting) -> None:
+        """Deletes a Meeting, cascading to its Chunks/Decisions/ActionItems
+        (both the ORM relationships and the DB's own ON DELETE CASCADE
+        agree -- see the Meeting/Chunk relationship comments in
+        app/models/orm.py). Traces are untouched: they carry no meeting_id
+        FK, see docs/adr/0010.
+        """
+        await self._session.delete(meeting)
+        await self._session.commit()
+
     async def get_by_source_filename(self, source_filename: str) -> Meeting | None:
         """Look up a Meeting by the transcript filename it was ingested from.
 
