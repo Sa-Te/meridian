@@ -31,6 +31,22 @@ class MeetingRead(BaseModel):
     created_at: datetime
 
 
+class MeetingSummaryRead(BaseModel):
+    """Lighter-weight Meeting shape for GET /meetings and GET /meetings/{id}
+    (Phase 7's meeting picker) -- deliberately omits raw_text, which is
+    irrelevant to a list/header view and can be a whole transcript's worth
+    of text per meeting.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    title: str
+    date: date
+    participants: list[str]
+    created_at: datetime
+
+
 class ChunkCreate(BaseModel):
     """Fields required to create a Chunk. Embedding is populated in Phase 2."""
 
@@ -55,6 +71,21 @@ class ChunkRead(BaseModel):
     chunk_index: int
 
 
+class CitationRead(BaseModel):
+    """A single supporting chunk cited in an AskResponse, or the chunk a
+    Decision/ActionItem was extracted from. Every field is looked up
+    server-side from the actual chunk, never taken from the LLM's response
+    -- see docs/adr/0007. Includes the chunk's own text (Phase 7) so a
+    citation can be rendered/expanded inline without a second request."""
+
+    chunk_id: uuid.UUID
+    meeting_id: uuid.UUID
+    speaker: str
+    start_ts: int
+    end_ts: int
+    text: str
+
+
 class DecisionCreate(BaseModel):
     """Fields required to record an extracted Decision. See docs/adr/0005 for why
     source_chunk_id is required rather than optional."""
@@ -65,12 +96,16 @@ class DecisionCreate(BaseModel):
 
 
 class DecisionRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    """API response shape for a Decision. source_citation (Phase 7) is
+    built server-side from the Decision's source_chunk_id/source_chunk
+    relationship at the router, not auto-mapped from the ORM object --
+    see app/routers/meetings.py.
+    """
 
     id: uuid.UUID
     meeting_id: uuid.UUID
     text: str
-    source_chunk_id: uuid.UUID
+    source_citation: CitationRead
     confidence: float
     created_at: datetime
 
@@ -87,14 +122,15 @@ class ActionItemCreate(BaseModel):
 
 
 class ActionItemRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    """API response shape for an ActionItem. See DecisionRead's docstring --
+    same source_citation construction reasoning."""
 
     id: uuid.UUID
     meeting_id: uuid.UUID
     text: str
     owner: str | None
     due_date: date | None
-    source_chunk_id: uuid.UUID
+    source_citation: CitationRead
     confidence: float
     status: ActionItemStatus
     created_at: datetime
@@ -124,18 +160,6 @@ class AskRequest(BaseModel):
     """Request body for POST /ask and POST /meetings/{id}/ask."""
 
     question: str = Field(min_length=1)
-
-
-class CitationRead(BaseModel):
-    """A single supporting chunk cited in an AskResponse. Fields other than
-    chunk_id are looked up server-side from the retrieved chunk, not taken
-    from the LLM's response -- see docs/adr/0007."""
-
-    chunk_id: uuid.UUID
-    meeting_id: uuid.UUID
-    speaker: str
-    start_ts: int
-    end_ts: int
 
 
 class AskResponse(BaseModel):

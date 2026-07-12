@@ -11,6 +11,7 @@ from app.models.schemas import (
     ActionItemRead,
     DecisionRead,
     IngestResponse,
+    MeetingSummaryRead,
     PromptInjectionFindingRead,
 )
 from app.providers.embedding.base import EmbeddingProvider
@@ -18,6 +19,7 @@ from app.providers.llm.base import LLMProvider
 from app.providers.llm.factory import get_configured_model_name
 from app.repositories.meeting_repository import MeetingRepository
 from app.repositories.trace_repository import TraceRepository
+from app.services.citations import build_citation
 from app.services.extraction import extract_records, to_orm_action_items, to_orm_decisions
 from app.services.guardrails.input_guardrail import scan_chunks_for_prompt_injection
 from app.services.ingestion import ingest_transcript
@@ -108,6 +110,22 @@ async def ingest_meeting(
         await TraceRepository(session).create(recorder.to_orm(outcome=outcome))
 
 
+@router.get("", response_model=list[MeetingSummaryRead])
+async def list_meetings(session: AsyncSession = Depends(get_db)) -> list[MeetingSummaryRead]:
+    meetings = await MeetingRepository(session).list_all()
+    return [MeetingSummaryRead.model_validate(meeting) for meeting in meetings]
+
+
+@router.get("/{meeting_id}", response_model=MeetingSummaryRead)
+async def get_meeting(
+    meeting_id: UUID, session: AsyncSession = Depends(get_db)
+) -> MeetingSummaryRead:
+    meeting = await MeetingRepository(session).get_by_id(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return MeetingSummaryRead.model_validate(meeting)
+
+
 @router.get("/{meeting_id}/decisions", response_model=list[DecisionRead])
 async def get_meeting_decisions(
     meeting_id: UUID,
@@ -116,7 +134,18 @@ async def get_meeting_decisions(
     meeting = await MeetingRepository(session).get_by_id(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
-    return [DecisionRead.model_validate(decision) for decision in meeting.decisions]
+    chunks_by_id = {chunk.id: chunk for chunk in meeting.chunks}
+    return [
+        DecisionRead(
+            id=decision.id,
+            meeting_id=decision.meeting_id,
+            text=decision.text,
+            source_citation=build_citation(chunks_by_id[decision.source_chunk_id]),
+            confidence=decision.confidence,
+            created_at=decision.created_at,
+        )
+        for decision in meeting.decisions
+    ]
 
 
 @router.get("/{meeting_id}/action-items", response_model=list[ActionItemRead])
@@ -127,4 +156,18 @@ async def get_meeting_action_items(
     meeting = await MeetingRepository(session).get_by_id(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
-    return [ActionItemRead.model_validate(item) for item in meeting.action_items]
+    chunks_by_id = {chunk.id: chunk for chunk in meeting.chunks}
+    return [
+        ActionItemRead(
+            id=item.id,
+            meeting_id=item.meeting_id,
+            text=item.text,
+            owner=item.owner,
+            due_date=item.due_date,
+            source_citation=build_citation(chunks_by_id[item.source_chunk_id]),
+            confidence=item.confidence,
+            status=item.status,
+            created_at=item.created_at,
+        )
+        for item in meeting.action_items
+    ]

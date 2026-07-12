@@ -93,6 +93,7 @@ async def test_ask_meeting_with_known_answer_returns_correct_citation() -> None:
     assert citation["chunk_id"] == str(target_chunk.id)
     assert citation["meeting_id"] == str(meeting.id)
     assert citation["start_ts"] == target_chunk.start_ts
+    assert citation["text"] == target_chunk.text
     assert len(fake_llm.calls) == 1
 
 
