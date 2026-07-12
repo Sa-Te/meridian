@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "meridian": {
+      "command": "${CLAUDE_PROJECT_DIR}/apps/mcp_server/.venv/bin/python",
+      "args": ["-m", "mcp_server"],
+      "env": {
+        "MERIDIAN_API_BASE_URL": "http://localhost:8000"
+      }
+    }
+  }
+}

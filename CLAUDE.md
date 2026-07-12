@@ -112,6 +112,11 @@ apps/
     tests/
       unit/
       integration/
+  mcp_server/     MCP server exposing search/ask/action-items as tools
+                  (Phase 8, docs/adr/0011) -- a thin HTTP client of
+                  apps/api, no business logic of its own
+    mcp_server/
+    tests/
 eval/
   golden_dataset/ Q&A pairs with expected supporting chunks
   run_eval.py     retrieval + LLM-judge scoring, used in CI

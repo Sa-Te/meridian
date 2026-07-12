@@ -170,6 +170,22 @@ class AskResponse(BaseModel):
     citations: list[CitationRead]
 
 
+class SearchResultRead(BaseModel):
+    """One ranked chunk from GET /search, backing the MCP search_meetings
+    tool (docs/adr/0011). fused_score is hybrid_search's ranking score
+    (see app/services/retrieval.py) -- higher is a better match, not a
+    calibrated probability."""
+
+    citation: CitationRead
+    fused_score: float
+
+
+class SearchResponse(BaseModel):
+    """Response shape for GET /search."""
+
+    results: list[SearchResultRead]
+
+
 class TraceStageRead(BaseModel):
     """One recorded stage within a Trace. See docs/adr/0010."""
 
