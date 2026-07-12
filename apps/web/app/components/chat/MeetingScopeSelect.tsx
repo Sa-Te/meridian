@@ -16,7 +16,11 @@ interface MeetingScopeSelectProps {
  * POST /meetings/{id}/ask. Fetches the meeting list itself -- if that
  * fails, scoping is simply unavailable for this session; asking globally
  * still works, so the failure isn't surfaced as a blocking error. */
-export function MeetingScopeSelect({ value, onChange, disabled }: MeetingScopeSelectProps) {
+export function MeetingScopeSelect({
+  value,
+  onChange,
+  disabled,
+}: MeetingScopeSelectProps) {
   const [meetings, setMeetings] = useState<MeetingSummary[]>([]);
 
   useEffect(() => {
