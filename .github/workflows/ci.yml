@@ -150,9 +150,96 @@ jobs:
           name: eval-report
           path: eval/results/latest.json
 
+  mcp:
+    name: MCP server - lint, type-check, smoke test
+    needs: [api]
+    runs-on: ubuntu-latest
+    env:
+      # Points at the postgres service below, not the docker-compose service
+      # name -- same reasoning as the api job.
+      DATABASE_URL: postgresql+asyncpg://meridian:meridian@localhost:5432/meridian
+      LLM_PROVIDER: gemini
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      EMBEDDING_PROVIDER: local
+      # Where the mcp_server smoke tests reach the api server started below.
+      MERIDIAN_API_BASE_URL: http://localhost:8000
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: meridian
+          POSTGRES_PASSWORD: meridian
+          POSTGRES_DB: meridian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U meridian"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install api dependencies
+        working-directory: apps/api
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run database migrations
+        working-directory: apps/api
+        run: alembic upgrade head
+
+      # The MCP server is an HTTP client of the real backend (docs/adr/0011),
+      # not a set of functions imported in-process -- its smoke test needs an
+      # actual running api server, unlike the eval job above, which calls
+      # app code directly in-process.
+      - name: Start api server in the background
+        working-directory: apps/api
+        run: |
+          set -euo pipefail
+          nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > /tmp/api-server.log 2>&1 &
+          for _ in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "api server did not become healthy in time" >&2
+          cat /tmp/api-server.log
+          exit 1
+
+      - name: Install mcp_server dependencies
+        working-directory: apps/mcp_server
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint (ruff check)
+        working-directory: apps/mcp_server
+        run: ruff check .
+
+      - name: Format check (ruff format)
+        working-directory: apps/mcp_server
+        run: ruff format --check .
+
+      - name: Type-check (mypy)
+        working-directory: apps/mcp_server
+        run: mypy mcp_server
+
+      - name: Smoke test each tool against the running api (pytest)
+        working-directory: apps/mcp_server
+        run: pytest -q
+
   docker-build:
     name: Build Docker images
-    needs: [api, web, eval]
+    needs: [api, web, eval, mcp]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
