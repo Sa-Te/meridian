@@ -2,6 +2,7 @@ import type {
   ActionItem,
   AskResponse,
   Decision,
+  IngestResponse,
   MeetingSummary,
   Trace,
   TraceListResponse,
@@ -26,6 +27,16 @@ export function toErrorMessage(error: unknown): string {
   return error instanceof ApiError ? error.message : "Something went wrong. Please try again.";
 }
 
+/** Reads the FastAPI `{"detail": "..."}` shape off a failed response, for
+ * both request() and any caller (like ingestMeeting) that can't use
+ * request() because it forces a JSON Content-Type. */
+async function extractErrorDetail(response: Response): Promise<string> {
+  const body: unknown = await response.json().catch(() => null);
+  return body !== null && typeof body === "object" && "detail" in body && typeof body.detail === "string"
+    ? body.detail
+    : response.statusText;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -33,12 +44,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const body: unknown = await response.json().catch(() => null);
-    const detail =
-      body !== null && typeof body === "object" && "detail" in body && typeof body.detail === "string"
-        ? body.detail
-        : response.statusText;
-    throw new ApiError(response.status, detail);
+    throw new ApiError(response.status, await extractErrorDetail(response));
   }
 
   return response.json() as Promise<T>;
@@ -54,6 +60,25 @@ export function askQuestion(question: string, meetingId?: string): Promise<AskRe
 
 export function listMeetings(): Promise<MeetingSummary[]> {
   return request<MeetingSummary[]>("/meetings");
+}
+
+/** Multipart upload, so this can't go through request(): that helper always
+ * sends Content-Type: application/json, but a browser-built FormData needs
+ * its own multipart boundary set by fetch itself. */
+export async function ingestMeeting(file: File): Promise<IngestResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_URL}/meetings/ingest`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new ApiError(response.status, await extractErrorDetail(response));
+  }
+
+  return response.json() as Promise<IngestResponse>;
 }
 
 export function getMeeting(meetingId: string): Promise<MeetingSummary> {
