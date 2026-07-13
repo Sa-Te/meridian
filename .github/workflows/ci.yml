@@ -67,8 +67,22 @@ jobs:
       - name: Run database migrations
         run: alembic upgrade head
 
-      - name: Unit + integration tests (pytest)
-        run: pytest -q
+      # Split so a broken unit test fails fast, before paying for the
+      # slower, Postgres-backed integration suite.
+      - name: Unit tests (pytest)
+        run: pytest -q tests/unit
+
+      - name: Integration tests (pytest)
+        run: pytest -q tests/integration
+
+      # eval/'s own unit tests (golden-question resolution, the judge
+      # prompt, the retry/cache wrappers) use fakes/stubs exactly like
+      # apps/api's own suite -- no real LLM call, no reason to wait for
+      # the separate eval-suite workflow (docs/adr/0016) just to catch a
+      # regression here.
+      - name: Unit tests (eval harness)
+        working-directory: ${{ github.workspace }}
+        run: python -m pytest -q eval/tests
 
   web:
     name: Web - lint, type-check, test
@@ -97,62 +111,9 @@ jobs:
       - name: Component tests (vitest)
         run: npm run test:ci
 
-  eval:
-    name: Eval suite (retrieval + LLM-judge quality gate)
-    needs: [api]
-    runs-on: ubuntu-latest
-    env:
-      # Points at the postgres service below, not the docker-compose service
-      # name -- same reasoning as the api job.
-      DATABASE_URL: postgresql+asyncpg://meridian:meridian@localhost:5432/meridian
-      LLM_PROVIDER: gemini
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      EMBEDDING_PROVIDER: local
-    services:
-      postgres:
-        image: pgvector/pgvector:pg16
-        env:
-          POSTGRES_USER: meridian
-          POSTGRES_PASSWORD: meridian
-          POSTGRES_DB: meridian
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U meridian"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=10
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        working-directory: apps/api
-        run: |
-          set -euo pipefail
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-
-      - name: Run database migrations
-        working-directory: apps/api
-        run: alembic upgrade head
-
-      - name: Run eval suite (see docs/adr/0009 for the gate thresholds)
-        run: python -m eval.run_eval
-
-      - name: Upload eval report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: eval-report
-          path: eval/results/latest.json
-
   mcp:
     name: MCP server - lint, type-check, smoke test
-    needs: [api]
+    needs: [api, web]
     runs-on: ubuntu-latest
     env:
       # Points at the postgres service below, not the docker-compose service
@@ -197,8 +158,12 @@ jobs:
 
       # The MCP server is an HTTP client of the real backend (docs/adr/0011),
       # not a set of functions imported in-process -- its smoke test needs an
-      # actual running api server, unlike the eval job above, which calls
-      # app code directly in-process.
+      # actual running api server. Unlike the eval workflow (eval.yml), which
+      # calls app code directly in-process, this needs a live HTTP server. It
+      # spends zero real Gemini calls here regardless: the fresh CI database
+      # has no ingested meetings, so ask_meetings always declines before
+      # reaching the LLM (see app/services/guardrails/output_guardrail.py's
+      # passes_retrieval_confidence on an empty retrieval set).
       - name: Start api server in the background
         working-directory: apps/api
         run: |
@@ -238,14 +203,31 @@ jobs:
         run: pytest -q
 
   docker-build:
-    name: Build Docker images
-    needs: [api, web, eval, mcp]
+    name: Build and tag Docker images
+    # The final stage of the fast, per-push pipeline: runs once every
+    # lint/type-check/test lane (api, web, mcp) has passed. The eval-suite
+    # quality gate is intentionally NOT a dependency here -- it runs in its
+    # own workflow (.github/workflows/eval.yml), gated to main and manual
+    # dispatch rather than every push, so it never blocks (or spends real
+    # Gemini quota on) routine feature-branch CI. See docs/adr/0016.
+    needs: [api, web, mcp]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build api image
-        run: docker build -t meridian-api:ci ./apps/api
+      # Tagged with both a moving `:ci` tag (latest green build on any
+      # branch) and the immutable commit SHA, so a specific image can be
+      # traced back to the exact commit it was built from.
+      - name: Build and tag api image
+        run: |
+          docker build \
+            -t meridian-api:ci \
+            -t "meridian-api:${{ github.sha }}" \
+            ./apps/api
 
-      - name: Build web image
-        run: docker build -t meridian-web:ci ./apps/web
+      - name: Build and tag web image
+        run: |
+          docker build \
+            -t meridian-web:ci \
+            -t "meridian-web:${{ github.sha }}" \
+            ./apps/web

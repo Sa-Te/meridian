@@ -1,8 +1,11 @@
+from unittest.mock import MagicMock, patch
+
+import numpy
 import pytest
 
 from app.config import Settings
 from app.providers.embedding.factory import get_embedding_provider
-from app.providers.embedding.local_bge_provider import LocalBGEEmbeddingProvider
+from app.providers.embedding.local_bge_provider import DEFAULT_MODEL, LocalBGEEmbeddingProvider
 from app.providers.embedding.voyage_provider import VoyageEmbeddingProvider
 from tests.fakes import FakeEmbeddingProvider
 
@@ -75,3 +78,28 @@ def test_provider_name_is_case_insensitive() -> None:
     provider = get_embedding_provider(settings)
 
     assert isinstance(provider, LocalBGEEmbeddingProvider)
+
+
+async def test_local_bge_provider_loads_the_model_once_and_reuses_it_on_later_calls() -> None:
+    """The sentence-transformers model is expensive to load (docs/adr/0004),
+    so a second embed() call must reuse the cached instance rather than
+    reconstructing SentenceTransformer."""
+    # encode() really returns a numpy array of row vectors, each with its own
+    # .tolist() -- a plain list of lists wouldn't reproduce the real
+    # interface local_bge_provider.py's _embed_sync depends on.
+    fake_model = MagicMock()
+    fake_model.encode.return_value = numpy.array([[0.1, 0.2], [0.3, 0.4]])
+
+    with patch(
+        "app.providers.embedding.local_bge_provider.SentenceTransformer",
+        return_value=fake_model,
+    ) as fake_constructor:
+        provider = LocalBGEEmbeddingProvider()
+
+        first = await provider.embed(["a", "b"])
+        second = await provider.embed(["c", "d"])
+
+    fake_constructor.assert_called_once_with(DEFAULT_MODEL)
+    assert first == [[0.1, 0.2], [0.3, 0.4]]
+    assert second == [[0.1, 0.2], [0.3, 0.4]]
+    assert fake_model.encode.call_count == 2

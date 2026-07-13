@@ -2,7 +2,7 @@ import pytest
 
 from app.config import Settings
 from app.providers.llm.anthropic_provider import AnthropicLLMProvider
-from app.providers.llm.factory import get_llm_provider
+from app.providers.llm.factory import get_configured_model_name, get_llm_provider
 from app.providers.llm.gemini_provider import GeminiLLMProvider
 
 
@@ -62,3 +62,22 @@ def test_provider_name_is_case_insensitive() -> None:
     provider = get_llm_provider(settings)
 
     assert isinstance(provider, GeminiLLMProvider)
+
+
+def test_configured_model_name_for_gemini() -> None:
+    settings = _settings(llm_provider="gemini", gemini_model="gemini-3.1-flash-lite")
+
+    assert get_configured_model_name(settings) == "gemini-3.1-flash-lite"
+
+
+def test_configured_model_name_for_anthropic() -> None:
+    settings = _settings(llm_provider="anthropic", anthropic_model="claude-sonnet-5")
+
+    assert get_configured_model_name(settings) == "claude-sonnet-5"
+
+
+def test_configured_model_name_raises_for_unknown_provider() -> None:
+    settings = _settings(llm_provider="openai")
+
+    with pytest.raises(ValueError, match="Unknown LLM_PROVIDER"):
+        get_configured_model_name(settings)

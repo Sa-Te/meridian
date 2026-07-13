@@ -125,6 +125,26 @@ describe("MeetingTimeline", () => {
     expect(screen.getByText("Already shipped this one.")).toBeInTheDocument();
   });
 
+  it("shows a filters-specific empty state when a filter excludes every entry", async () => {
+    vi.mocked(listMeetingDecisions).mockResolvedValue([]);
+    vi.mocked(listMeetingActionItems).mockResolvedValue([laterActionItem]);
+
+    render(<MeetingTimeline meetingId="m1" />);
+    await waitFor(() => screen.getByText("Send the source by Friday."));
+
+    fireEvent.change(screen.getByLabelText("Filter action items by status"), {
+      target: { value: "done" },
+    });
+
+    expect(
+      screen.getByText("No action items match the selected filters."),
+    ).toBeInTheDocument();
+    // Distinct from the "nothing was extracted at all" empty state.
+    expect(
+      screen.queryByText("No decisions or action items were extracted from this meeting."),
+    ).not.toBeInTheDocument();
+  });
+
   it("shows an empty state when nothing was extracted", async () => {
     vi.mocked(listMeetingDecisions).mockResolvedValue([]);
     vi.mocked(listMeetingActionItems).mockResolvedValue([]);

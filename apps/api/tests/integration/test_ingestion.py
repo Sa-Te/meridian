@@ -16,7 +16,13 @@ from app.dependencies import get_cached_embedding_provider, get_cached_llm_provi
 from app.main import app
 from app.models.orm import Meeting, Trace
 from app.repositories.meeting_repository import MeetingRepository
-from app.services.extraction import _LLMExtractionPayload
+from app.services.extraction import (
+    ExtractedActionItem,
+    ExtractedDecision,
+    _LLMExtractionPayload,
+    to_orm_action_items,
+    to_orm_decisions,
+)
 from app.services.ingestion import ingest_transcript
 from tests.fakes import FakeEmbeddingProvider, FakeLLMProvider
 
@@ -137,6 +143,86 @@ async def test_ingest_endpoint_returns_meeting_id_and_chunk_count() -> None:
     async with async_session_factory() as session:
         fetched = await MeetingRepository(session).get_by_id(body["meeting_id"])
     assert fetched is not None
+
+
+async def test_add_extractions_attaches_meeting_id_to_decisions_and_action_items() -> None:
+    """MeetingRepository.add_extractions sets meeting_id on each child row
+    before persisting (see its docstring) -- every other ingest test in this
+    file extracts an empty payload, which never exercises that assignment."""
+    async with async_session_factory() as session:
+        meeting = await ingest_transcript(
+            filename=_SAMPLE_TRANSCRIPT.name,
+            raw_text=_SAMPLE_TRANSCRIPT.read_text(),
+            embedding_provider=FakeEmbeddingProvider(),
+            session=session,
+        )
+    target_chunk_id = meeting.chunks[0].id
+
+    decision = to_orm_decisions(
+        [
+            ExtractedDecision(
+                text="Ship the roadmap as prioritized.",
+                source_chunk_id=target_chunk_id,
+                confidence=0.9,
+            )
+        ]
+    )
+    action_item = to_orm_action_items(
+        [
+            ExtractedActionItem(
+                text="Follow up with the design team.",
+                owner="Todd",
+                due_date=None,
+                source_chunk_id=target_chunk_id,
+                confidence=0.9,
+            )
+        ]
+    )
+
+    async with async_session_factory() as session:
+        repository = MeetingRepository(session)
+        attached_meeting = await repository.get_by_id(meeting.id)
+        assert attached_meeting is not None
+        updated = await repository.add_extractions(
+            attached_meeting, decisions=decision, action_items=action_item
+        )
+
+    assert len(updated.decisions) == 1
+    assert updated.decisions[0].meeting_id == meeting.id
+    assert len(updated.action_items) == 1
+    assert updated.action_items[0].meeting_id == meeting.id
+    assert updated.action_items[0].owner == "Todd"
+
+    async with async_session_factory() as session:
+        fetched = await MeetingRepository(session).get_by_id(meeting.id)
+
+    assert fetched is not None
+    assert len(fetched.decisions) == 1
+    assert fetched.decisions[0].meeting_id == meeting.id
+    assert len(fetched.action_items) == 1
+    assert fetched.action_items[0].meeting_id == meeting.id
+
+
+async def test_ingest_endpoint_rejects_non_utf8_file_content() -> None:
+    _override_providers()
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.post(
+                "/meetings/ingest",
+                files={
+                    "file": (
+                        "2026-01-14_discovery-call.txt",
+                        b"\xff\xfe not valid utf-8",
+                        "text/plain",
+                    )
+                },
+            )
+    finally:
+        _clear_overrides()
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "Transcript file must be UTF-8 text."
 
 
 async def test_ingest_endpoint_rejects_unparseable_filename() -> None:

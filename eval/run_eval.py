@@ -50,6 +50,7 @@ from app.services.answer_generation import UNSUPPORTED_ANSWER, generate_answer
 from app.services.guardrails.output_guardrail import passes_retrieval_confidence
 from app.services.ingestion import ingest_transcript
 from app.services.retrieval import RetrievedChunk, hybrid_search
+from eval.caching_llm_provider import CachingLLMProvider
 from eval.golden import GoldenQuestion, load_golden_questions, resolve_expected_chunk_ids
 from eval.judge import judge_answer
 from eval.metrics import evaluate_gate, mean, precision_at_k, recall_at_k
@@ -293,7 +294,10 @@ async def run() -> dict[str, Any]:
         )
 
     embedding_provider = get_embedding_provider(settings)
-    llm_provider = get_llm_provider(settings)
+    # Wrapped in a fresh, short-lived memo cache for this run only (see
+    # docs/adr/0016) -- identical (prompt, system, schema) calls within
+    # this run reuse the first real response instead of re-spending quota.
+    llm_provider = CachingLLMProvider(get_llm_provider(settings))
     golden_questions = load_golden_questions()
 
     async with async_session_factory() as session:

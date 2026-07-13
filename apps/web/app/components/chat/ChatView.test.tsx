@@ -38,6 +38,20 @@ describe("ChatView", () => {
     expect(screen.getByRole("button", { name: "Ask" })).toBeEnabled();
   });
 
+  it("does not submit a blank or whitespace-only question", async () => {
+    // The Ask button is already disabled in this state -- this test submits
+    // the form directly (as pressing Enter in the input field would) to
+    // exercise handleSubmit's own guard clause, not just the button's
+    // disabled attribute.
+    render(<ChatView />);
+
+    fireEvent.change(screen.getByLabelText("Your question"), { target: { value: "   " } });
+    fireEvent.submit(screen.getByLabelText("Your question").closest("form")!);
+
+    expect(askQuestion).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("chat-loading")).not.toBeInTheDocument();
+  });
+
   it("shows a loading state, then a supported answer with citations", async () => {
     vi.mocked(askQuestion).mockResolvedValue({
       answer: "Five to seven workouts.",

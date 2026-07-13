@@ -19,5 +19,19 @@ export default defineConfig({
     // both use a *.spec.ts naming convention, so Vitest's default include
     // glob would otherwise try to run them too.
     exclude: ["**/node_modules/**", "**/e2e/**"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      include: ["app/**/*.{ts,tsx}"],
+      exclude: [
+        "app/**/*.test.{ts,tsx}",
+        "app/**/*.d.ts",
+        "app/layout.tsx",
+        "app/**/page.tsx",
+        // Pure type declarations -- nothing to execute, so coverage on this
+        // file is meaningless (unlike client.ts's runtime logic).
+        "app/lib/api/types.ts",
+      ],
+    },
   },
 });

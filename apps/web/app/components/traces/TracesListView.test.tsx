@@ -95,6 +95,16 @@ describe("TracesListView", () => {
     });
   });
 
+  it("shows an error message when the fetch fails", async () => {
+    vi.mocked(listTraces).mockRejectedValue(new Error("boom"));
+
+    render(<TracesListView />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Something went wrong. Please try again.")).toBeInTheDocument();
+    });
+  });
+
   it("shows an empty state when no traces match the filters", async () => {
     vi.mocked(listTraces).mockResolvedValue({ items: [], total: 0, limit: 20, offset: 0 });
 
