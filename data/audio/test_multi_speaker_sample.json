@@ -1,0 +1,81 @@
+{
+  "turns": [
+    {
+      "speaker": "Speaker A",
+      "text": "Good morning everyone, thanks for joining the call today.",
+      "start_sec": 0.0,
+      "end_sec": 3.73,
+      "is_short_utterance": false
+    },
+    {
+      "speaker": "Speaker B",
+      "text": "Sure, happy to be here.",
+      "start_sec": 4.33,
+      "end_sec": 6.27,
+      "is_short_utterance": false
+    },
+    {
+      "speaker": "Speaker A",
+      "text": "Let's start with the budget update from last week.",
+      "start_sec": 6.87,
+      "end_sec": 9.97,
+      "is_short_utterance": false
+    },
+    {
+      "speaker": "Speaker B",
+      "text": "The budget came in under projections this quarter.",
+      "start_sec": 10.57,
+      "end_sec": 13.51,
+      "is_short_utterance": false
+    },
+    {
+      "speaker": "Speaker A",
+      "text": "That sounds reasonable to me.",
+      "start_sec": 14.11,
+      "end_sec": 16.03,
+      "is_short_utterance": false
+    },
+    {
+      "speaker": "Speaker A",
+      "text": "Right, right.",
+      "start_sec": 18.34,
+      "end_sec": 19.61,
+      "is_overlap": true
+    },
+    {
+      "speaker": "Speaker B",
+      "text": "I agree, we should move forward with the plan.",
+      "start_sec": 16.63,
+      "end_sec": 19.48,
+      "is_short_utterance": false
+    },
+    {
+      "speaker": "Speaker A",
+      "text": "Okay.",
+      "start_sec": 20.21,
+      "end_sec": 20.6,
+      "is_short_utterance": true
+    },
+    {
+      "speaker": "Speaker B",
+      "text": "Can we lock in a date for the rollout?",
+      "start_sec": 21.2,
+      "end_sec": 23.29,
+      "is_short_utterance": false
+    },
+    {
+      "speaker": "Speaker A",
+      "text": "Let's say next Tuesday, does that work?",
+      "start_sec": 23.89,
+      "end_sec": 26.82,
+      "is_short_utterance": false
+    },
+    {
+      "speaker": "Speaker B",
+      "text": "Yes, Tuesday works well for me.",
+      "start_sec": 27.42,
+      "end_sec": 29.92,
+      "is_short_utterance": false
+    }
+  ]
+}

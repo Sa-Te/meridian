@@ -1,10 +1,24 @@
+import numpy as np
 import pytest
 from pydantic import BaseModel
 
 from app.models.orm import TraceOutcome
+from app.providers.diarization.base import DiarizationSegment
 from app.providers.llm.base import LLMMessage, LLMResponse
-from app.services.tracing import TraceRecorder, TracingEmbeddingProvider, TracingLLMProvider
-from tests.fakes import FakeEmbeddingProvider, FakeLLMProvider
+from app.providers.transcription.base import TranscriptionSegment
+from app.services.tracing import (
+    TraceRecorder,
+    TracingDiarizationProvider,
+    TracingEmbeddingProvider,
+    TracingLLMProvider,
+    TracingTranscriptionProvider,
+)
+from tests.fakes import (
+    FakeDiarizationProvider,
+    FakeEmbeddingProvider,
+    FakeLLMProvider,
+    FakeTranscriptionProvider,
+)
 
 
 class _Payload(BaseModel):
@@ -150,3 +164,40 @@ async def test_tracing_llm_provider_records_error_on_generate_failure() -> None:
 
     assert recorder.stages[0].metadata["error"] == "vendor is down"
     assert recorder.input_tokens == 0
+
+
+async def test_tracing_transcription_provider_delegates_and_records_stage() -> None:
+    recorder = TraceRecorder(endpoint="POST /meetings/ingest-audio")
+    fake = FakeTranscriptionProvider(
+        segments=[TranscriptionSegment(start_ts=0.0, end_ts=1.5, text="Hello.")]
+    )
+    provider = TracingTranscriptionProvider(fake, recorder)
+    waveform = np.zeros(16_000, dtype=np.float32)
+
+    segments = await provider.transcribe(waveform, sample_rate=16_000)
+
+    assert segments[0].text == "Hello."
+    assert fake.calls == [(waveform, 16_000)]
+    assert recorder.stages[0].name == "transcribe"
+    assert recorder.stages[0].metadata["sample_rate"] == 16_000
+    assert recorder.stages[0].metadata["segment_count"] == 1
+
+
+async def test_tracing_diarization_provider_delegates_and_records_stage() -> None:
+    recorder = TraceRecorder(endpoint="POST /meetings/ingest-audio")
+    fake = FakeDiarizationProvider(
+        segments=[
+            DiarizationSegment(start_ts=0.0, end_ts=2.0, speaker_label="SPEAKER_00"),
+            DiarizationSegment(start_ts=2.0, end_ts=4.0, speaker_label="SPEAKER_01"),
+        ]
+    )
+    provider = TracingDiarizationProvider(fake, recorder)
+    waveform = np.zeros(16_000, dtype=np.float32)
+
+    segments = await provider.diarize(waveform, sample_rate=16_000, min_speakers=1, max_speakers=3)
+
+    assert len(segments) == 2
+    assert fake.calls == [{"sample_rate": 16_000, "min_speakers": 1, "max_speakers": 3}]
+    assert recorder.stages[0].name == "diarize"
+    assert recorder.stages[0].metadata["segment_count"] == 2
+    assert recorder.stages[0].metadata["distinct_speakers"] == 2

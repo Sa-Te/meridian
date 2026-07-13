@@ -44,7 +44,11 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          # --extra-index-url keeps torch/torchaudio (transitive deps of
+          # sentence-transformers and pyannote.audio, see docs/adr/0012) on
+          # CPU wheels -- otherwise pip resolves the default CUDA builds,
+          # multiple GB of unused GPU libraries slowing every CI run down.
+          pip install --extra-index-url https://download.pytorch.org/whl/cpu -e ".[dev]"
 
       - name: Lint (ruff check)
         run: ruff check .
@@ -150,7 +154,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install --extra-index-url https://download.pytorch.org/whl/cpu -e ".[dev]"
 
       - name: Run database migrations
         working-directory: apps/api

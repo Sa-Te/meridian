@@ -14,9 +14,18 @@ dependencies = [
     "alembic>=1.13",
     "asyncpg>=0.29",
     "pgvector>=0.3",
-    "sentence-transformers>=3.0",
+    # <5.0: 5.x's optional audio/video embedding support imports torchcodec
+    # unconditionally at module load time, which hard-crashes in any
+    # environment without a working ffmpeg -- see docs/adr/0012's
+    # "torchcodec import crash" note. Irrelevant to this project either way
+    # (only the local BGE *text* embedding model is used), so there's no
+    # real feature loss in staying below it.
+    "sentence-transformers>=3.0,<5.0",
     "voyageai>=0.3",
     "python-multipart>=0.0.9",
+    "faster-whisper>=1.0",
+    "pyannote.audio>=4.0",
+    "soundfile>=0.12",
 ]
 
 [project.optional-dependencies]
@@ -59,6 +68,11 @@ mypy_path = "app"
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+# None of these three ship type stubs or a py.typed marker.
+module = ["faster_whisper.*", "soundfile.*", "scipy.signal.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

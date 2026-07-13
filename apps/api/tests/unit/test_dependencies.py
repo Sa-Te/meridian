@@ -1,9 +1,16 @@
 import pytest
 
 from app.config import Settings, get_settings
-from app.dependencies import get_cached_embedding_provider, get_cached_llm_provider
+from app.dependencies import (
+    get_cached_diarization_provider,
+    get_cached_embedding_provider,
+    get_cached_llm_provider,
+    get_cached_transcription_provider,
+)
+from app.providers.diarization.pyannote_provider import PyannoteDiarizationProvider
 from app.providers.embedding.local_bge_provider import LocalBGEEmbeddingProvider
 from app.providers.llm.gemini_provider import GeminiLLMProvider
+from app.providers.transcription.faster_whisper_provider import FasterWhisperTranscriptionProvider
 
 
 def test_get_cached_embedding_provider_builds_from_settings_and_caches_the_instance() -> None:
@@ -37,3 +44,33 @@ def test_get_cached_llm_provider_builds_from_settings_and_caches_the_instance(
         assert get_cached_llm_provider() is provider
     finally:
         get_cached_llm_provider.cache_clear()
+
+
+def test_get_cached_transcription_provider_builds_from_settings_and_caches_the_instance() -> None:
+    get_cached_transcription_provider.cache_clear()
+    get_settings.cache_clear()
+    try:
+        provider = get_cached_transcription_provider()
+
+        assert isinstance(provider, FasterWhisperTranscriptionProvider)
+        assert get_cached_transcription_provider() is provider
+    finally:
+        get_cached_transcription_provider.cache_clear()
+        get_settings.cache_clear()
+
+
+def test_get_cached_diarization_provider_builds_from_settings_and_caches_the_instance(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "app.dependencies.get_settings",
+        lambda: Settings(_env_file=None, hf_token="fake-token"),  # type: ignore[call-arg]
+    )
+    get_cached_diarization_provider.cache_clear()
+    try:
+        provider = get_cached_diarization_provider()
+
+        assert isinstance(provider, PyannoteDiarizationProvider)
+        assert get_cached_diarization_provider() is provider
+    finally:
+        get_cached_diarization_provider.cache_clear()

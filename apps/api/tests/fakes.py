@@ -1,9 +1,13 @@
 """Shared test doubles, importable from both tests/unit and tests/integration."""
 
+import numpy as np
+from numpy.typing import NDArray
 from pydantic import BaseModel
 
+from app.providers.diarization.base import DiarizationProvider, DiarizationSegment
 from app.providers.embedding.base import EmbeddingProvider
 from app.providers.llm.base import LLMMessage, LLMProvider, LLMResponse, SchemaT
+from app.providers.transcription.base import TranscriptionProvider, TranscriptionSegment
 
 
 class FakeEmbeddingProvider(EmbeddingProvider):
@@ -86,3 +90,48 @@ class FakeLLMProvider(LLMProvider):
             raise response
         assert isinstance(response, response_model)
         return response
+
+
+class FakeTranscriptionProvider(TranscriptionProvider):
+    """A scripted TranscriptionProvider for tests that shouldn't need a
+    real faster-whisper model. Returns `segments` regardless of the
+    waveform given; records every call's (waveform, sample_rate) for
+    assertions."""
+
+    def __init__(self, segments: list[TranscriptionSegment] | None = None) -> None:
+        self._segments = list(segments) if segments is not None else []
+        self.calls: list[tuple[NDArray[np.float32], int]] = []
+
+    async def transcribe(
+        self, waveform: NDArray[np.float32], *, sample_rate: int
+    ) -> list[TranscriptionSegment]:
+        self.calls.append((waveform, sample_rate))
+        return list(self._segments)
+
+
+class FakeDiarizationProvider(DiarizationProvider):
+    """A scripted DiarizationProvider for tests that shouldn't need a real
+    pyannote.audio pipeline (or a real HF_TOKEN). Returns `segments`
+    regardless of the waveform given; records every call's arguments for
+    assertions."""
+
+    def __init__(self, segments: list[DiarizationSegment] | None = None) -> None:
+        self._segments = list(segments) if segments is not None else []
+        self.calls: list[dict[str, object]] = []
+
+    async def diarize(
+        self,
+        waveform: NDArray[np.float32],
+        *,
+        sample_rate: int,
+        min_speakers: int | None = None,
+        max_speakers: int | None = None,
+    ) -> list[DiarizationSegment]:
+        self.calls.append(
+            {
+                "sample_rate": sample_rate,
+                "min_speakers": min_speakers,
+                "max_speakers": max_speakers,
+            }
+        )
+        return list(self._segments)
