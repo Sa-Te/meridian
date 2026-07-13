@@ -1,0 +1,68 @@
+name: Eval suite
+
+# Deliberately NOT run on every push/PR: this job spends real Gemini API
+# calls (two per golden question -- one to generate an answer, one for the
+# LLM-judge) against a free-tier key that caps both requests-per-minute and
+# requests-per-day (see docs/adr/0013). Running it on every feature-branch
+# push repeatedly exhausted that quota and made CI flaky for reasons
+# unrelated to code correctness. See docs/adr/0016 for the full reasoning:
+# this now runs only on push to main (post-merge, not pre-merge) or when
+# someone deliberately asks for a quality read via workflow_dispatch.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  eval:
+    name: Eval suite (retrieval + LLM-judge quality gate)
+    runs-on: ubuntu-latest
+    env:
+      # Points at the postgres service below, not the docker-compose service
+      # name -- this job runs pytest/python directly on the runner, not
+      # inside a container.
+      DATABASE_URL: postgresql+asyncpg://meridian:meridian@localhost:5432/meridian
+      LLM_PROVIDER: gemini
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      EMBEDDING_PROVIDER: local
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: meridian
+          POSTGRES_PASSWORD: meridian
+          POSTGRES_DB: meridian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U meridian"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: apps/api
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run database migrations
+        working-directory: apps/api
+        run: alembic upgrade head
+
+      - name: Run eval suite (see docs/adr/0009 for the gate thresholds)
+        run: python -m eval.run_eval
+
+      - name: Upload eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: eval/results/latest.json

@@ -1,5 +1,7 @@
 # Meridian
 
+[![CI](https://github.com/Sa-Te/meridian/actions/workflows/ci.yml/badge.svg)](https://github.com/Sa-Te/meridian/actions/workflows/ci.yml)
+
 Meridian is a meeting intelligence system that ingests speaker-labelled,
 timestamped meeting transcripts from a simulated health-tech consulting
 engagement and answers questions about discussions, decisions, and action
