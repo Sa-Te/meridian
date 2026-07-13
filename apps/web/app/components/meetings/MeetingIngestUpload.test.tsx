@@ -91,6 +91,15 @@ describe("MeetingIngestUpload", () => {
     expect(onIngested).not.toHaveBeenCalled();
   });
 
+  it("does nothing when the file picker is dismissed without a selection", async () => {
+    render(<MeetingIngestUpload />);
+
+    fireEvent.change(screen.getByLabelText("Transcript file"), { target: { files: [] } });
+
+    expect(ingestMeeting).not.toHaveBeenCalled();
+    expect(screen.queryByText("Ingested")).not.toBeInTheDocument();
+  });
+
   it("rejects non-.txt files without calling the API", async () => {
     render(<MeetingIngestUpload />);
 

@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { listMeetings } from "@/app/lib/api/client";
+import { ingestMeeting, listMeetings } from "@/app/lib/api/client";
 
 import { MeetingsListView } from "./MeetingsListView";
 
@@ -12,12 +12,14 @@ vi.mock("@/app/lib/api/client", async () => {
   return {
     ...actual,
     listMeetings: vi.fn(),
+    ingestMeeting: vi.fn(),
   };
 });
 
 describe("MeetingsListView", () => {
   beforeEach(() => {
     vi.mocked(listMeetings).mockReset();
+    vi.mocked(ingestMeeting).mockReset();
   });
 
   it("shows a loading state before meetings arrive", () => {
@@ -67,5 +69,25 @@ describe("MeetingsListView", () => {
     await waitFor(() => {
       expect(screen.getByText("Something went wrong. Please try again.")).toBeInTheDocument();
     });
+  });
+
+  it("refetches the meetings list after a successful ingest", async () => {
+    vi.mocked(listMeetings).mockResolvedValue([]);
+    vi.mocked(ingestMeeting).mockResolvedValue({
+      meeting_id: "m1",
+      chunk_count: 1,
+      decision_count: 0,
+      action_item_count: 0,
+      flagged_for_prompt_injection: false,
+      prompt_injection_findings: [],
+    });
+
+    render(<MeetingsListView />);
+    await waitFor(() => expect(listMeetings).toHaveBeenCalledTimes(1));
+
+    const file = new File(["hello"], "2026-01-14_call.txt", { type: "text/plain" });
+    fireEvent.change(screen.getByLabelText("Transcript file"), { target: { files: [file] } });
+
+    await waitFor(() => expect(listMeetings).toHaveBeenCalledTimes(2));
   });
 });

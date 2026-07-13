@@ -107,6 +107,14 @@ async def test_get_meeting_decisions_404s_for_unknown_meeting() -> None:
     assert response.status_code == 404
 
 
+async def test_get_meeting_action_items_404s_for_unknown_meeting() -> None:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get(f"/meetings/{uuid.uuid4()}/action-items")
+
+    assert response.status_code == 404
+
+
 async def test_global_action_items_filters_by_status_and_owner() -> None:
     _, _, open_item_id = await _seed_meeting_with_extractions()
 

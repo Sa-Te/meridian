@@ -59,6 +59,26 @@ describe("TraceDetailView", () => {
     expect(screen.getByText("gemini-3.1-flash-lite")).toBeInTheDocument();
   });
 
+  it("shows a fallback label when no model was invoked", async () => {
+    vi.mocked(getTrace).mockResolvedValue({
+      id: "t2",
+      endpoint: "POST /ask",
+      stages: [],
+      total_duration_ms: 12,
+      input_tokens: 0,
+      output_tokens: 0,
+      models_used: [],
+      outcome: "declined",
+      created_at: "2026-07-11T16:54:16.726462Z",
+    });
+
+    render(<TraceDetailView traceId="t2" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("no model invoked")).toBeInTheDocument();
+    });
+  });
+
   it("shows an error message if the trace fetch fails", async () => {
     vi.mocked(getTrace).mockRejectedValue(new Error("not found"));
 
