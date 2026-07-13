@@ -94,8 +94,13 @@ ADR-0002 as originally decided.
 - Orchestration: custom, thin, hand-written pipeline. No LangChain/LlamaIndex.
 - Containerization: Docker Compose for local/dev; a Terraform sketch under
   `infra/terraform/` documents (does not necessarily deploy) an AWS path.
-- CI: GitHub Actions — lint, type-check, unit + integration tests, eval-suite
-  gate, build images.
+- CI: GitHub Actions — lint, type-check, unit + integration tests, then build
+  + tag images, on every push (`.github/workflows/ci.yml`). The eval-suite
+  gate runs in a separate workflow (`.github/workflows/eval.yml`), on push
+  to `main` and manual `workflow_dispatch` only, not on every push — see
+  `docs/adr/0016` for why (free-tier Gemini quota exhaustion) and
+  `docs/adr/0015` for the coverage-tooling and fail-fast ordering work that
+  preceded it.
 
 ## 5. Repository layout
 
