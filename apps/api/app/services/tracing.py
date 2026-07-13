@@ -16,9 +16,14 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
+import numpy as np
+from numpy.typing import NDArray
+
 from app.models.orm import Trace, TraceOutcome
+from app.providers.diarization.base import DiarizationProvider, DiarizationSegment
 from app.providers.embedding.base import EmbeddingProvider
 from app.providers.llm.base import LLMMessage, LLMProvider, LLMResponse, SchemaT
+from app.providers.transcription.base import TranscriptionProvider, TranscriptionSegment
 
 
 @dataclass(frozen=True)
@@ -176,3 +181,50 @@ class TracingLLMProvider(LLMProvider):
                 max_tokens=max_tokens,
                 temperature=temperature,
             )
+
+
+class TracingTranscriptionProvider(TranscriptionProvider):
+    """Decorator around a real TranscriptionProvider recording one
+    "transcribe" stage per call. See docs/adr/0012.
+    """
+
+    def __init__(self, wrapped: TranscriptionProvider, recorder: TraceRecorder) -> None:
+        self._wrapped = wrapped
+        self._recorder = recorder
+
+    async def transcribe(
+        self, waveform: NDArray[np.float32], *, sample_rate: int
+    ) -> list[TranscriptionSegment]:
+        async with self._recorder.stage("transcribe", sample_rate=sample_rate) as metadata:
+            segments = await self._wrapped.transcribe(waveform, sample_rate=sample_rate)
+            metadata["segment_count"] = len(segments)
+            return segments
+
+
+class TracingDiarizationProvider(DiarizationProvider):
+    """Decorator around a real DiarizationProvider recording one
+    "diarize" stage per call. See docs/adr/0012.
+    """
+
+    def __init__(self, wrapped: DiarizationProvider, recorder: TraceRecorder) -> None:
+        self._wrapped = wrapped
+        self._recorder = recorder
+
+    async def diarize(
+        self,
+        waveform: NDArray[np.float32],
+        *,
+        sample_rate: int,
+        min_speakers: int | None = None,
+        max_speakers: int | None = None,
+    ) -> list[DiarizationSegment]:
+        async with self._recorder.stage("diarize", sample_rate=sample_rate) as metadata:
+            segments = await self._wrapped.diarize(
+                waveform,
+                sample_rate=sample_rate,
+                min_speakers=min_speakers,
+                max_speakers=max_speakers,
+            )
+            metadata["segment_count"] = len(segments)
+            metadata["distinct_speakers"] = len({segment.speaker_label for segment in segments})
+            return segments

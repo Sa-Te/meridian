@@ -7,12 +7,14 @@ COPY app ./app
 COPY alembic.ini ./
 COPY alembic ./alembic
 
-# Installed first, from the CPU-only wheel index: plain `pip install .`
-# would otherwise pull in torch's default CUDA build as a transitive
-# dependency of sentence-transformers (ADR-0004's local embedding model),
-# adding several GB of GPU libraries this CPU-only container never uses.
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
-RUN pip install --no-cache-dir .
+# --extra-index-url (not a one-off pre-install) on the real install too:
+# plain `pip install .` would otherwise resolve torch/torchaudio's default
+# CUDA builds as transitive dependencies of sentence-transformers
+# (ADR-0004) and pyannote.audio (ADR-0012), adding several GB of GPU
+# libraries this CPU-only container never uses. Pointing the whole
+# resolution at the CPU wheel index keeps every torch-family package on
+# CPU builds, not just whichever one happens to be installed first.
+RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu .
 
 EXPOSE 8000
 

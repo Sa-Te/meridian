@@ -95,6 +95,22 @@ class Settings(BaseSettings):
         "recorded as fact. See ADR-0008.",
     )
 
+    whisper_model: str = Field(
+        default="small",
+        description="faster-whisper model size used for POST /meetings/ingest-audio's "
+        "transcription. See docs/adr/0012.",
+    )
+    hf_token: str | None = Field(
+        default=None,
+        description="Required for POST /meetings/ingest-audio's speaker diarization "
+        "(pyannote.audio, gated on HuggingFace) -- not required for the rest of the "
+        "system. See docs/adr/0012.",
+    )
+    diarization_model: str = Field(
+        default="pyannote/speaker-diarization-3.1",
+        description="pyannote.audio pipeline used for speaker diarization. See docs/adr/0012.",
+    )
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
