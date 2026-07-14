@@ -55,3 +55,11 @@ eval/results/
 # regenerable intermediate TTS clips for data/audio/generate_test_fixture.py --
 # see that script's docstring; only the .wav/.json it produces are checked in.
 data/audio/_raw_clips/
+
+# terraform (infra/terraform/ is a documented sketch, never applied --
+# see infra/terraform/README.md -- but local `terraform init`/`validate`
+# runs still generate these)
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
