@@ -600,36 +600,24 @@ order:
 
 ## 9. Screenshots
 
-_Placeholders below — TJ to replace with real screenshots of the running
-app before submission (CLAUDE.md Section 10 / ROADMAP Phase 11's
-definition of done: "Screenshots are real, not placeholders, in the
-final version")._
+**1. Chat with a citation** — a question with a known answer in the seed
+transcripts, with the response's citation chip expanded to show the
+speaker/timestamp/excerpt inline.
 
-**1. Chat with a citation** — `http://localhost:3000/` (or wherever the
-chat view is mounted). Ask a question with a known answer in the seed
-transcripts, and capture the response _with its citation chip expanded_,
-showing the speaker/timestamp/excerpt inline.
+![Chat with citation](docs/screenshots/chat-with-citation.png)
 
-`![Chat with citation](docs/screenshots/chat-with-citation.png)`
+**2. Decisions/action-items timeline** — a meeting detail page with
+decisions and action items visible, each linked back to its source
+citation, with owner and status shown on the action items.
 
-**2. Decisions/action-items timeline** — a meeting detail page
-(`/meetings/{id}`) with at least one decision and one action item visible,
-each linked back to its source citation, ideally with the owner/status
-fields visible on the action item.
+![Decisions and action items timeline](docs/screenshots/decisions-action-items-timeline.png)
 
-`![Decisions and action items timeline](docs/screenshots/decisions-action-items-timeline.png)`
+**3. Traces dashboard** — the traces list showing both an `answered` and
+a `declined` outcome.
 
-**3. Traces dashboard** — `/traces`, showing at least one `answered` and
-one `declined` or `error` trace in the list, plus one trace detail view
-(`/traces/{id}`) with its full stage-by-stage breakdown expanded.
+![Traces dashboard](docs/screenshots/traces-dashboard.png)
 
-`![Traces dashboard](docs/screenshots/traces-dashboard.png)`
+**4. Meeting ingest** — right after uploading a `.txt` transcript, showing
+the "Ingested" badge and the chunk/decision/action-item counts it reports.
 
-**4. Meeting ingest** — `/meetings`, right after uploading a `.txt`
-transcript, showing the "Ingested" badge and the chunk/decision/action-item
-counts it reports (see `TESTING.md` Part 1 for the exact steps).
-
-`![Meeting ingest](docs/screenshots/meeting-ingest.png)`
-
-Save the real image files under `docs/screenshots/` using the filenames
-above so these links resolve without further edits.
+![Meeting ingest](docs/screenshots/meeting-ingest.png)
