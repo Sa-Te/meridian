@@ -1,5 +1,6 @@
 import { Card } from "@/app/components/ui/Card";
 import { formatDuration } from "@/app/lib/format";
+import { LIST_ENTER_CLASSES, staggerDelayStyle } from "@/app/lib/motion";
 import type { TraceStage } from "@/app/lib/api/types";
 
 interface TraceStageTimelineProps {
@@ -21,7 +22,11 @@ export function TraceStageTimeline({ stages }: TraceStageTimelineProps) {
   return (
     <ol className="flex flex-col gap-3">
       {stages.map((stage, index) => (
-        <li key={`${stage.name}-${index}`}>
+        <li
+          key={`${stage.name}-${index}`}
+          className={LIST_ENTER_CLASSES}
+          style={staggerDelayStyle(index)}
+        >
           <Card>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-mono text-sm text-foreground">{stage.name}</span>

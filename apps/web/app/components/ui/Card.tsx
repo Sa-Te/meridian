@@ -1,6 +1,7 @@
 import type { HTMLAttributes, ReactNode } from "react";
 
 import { cn } from "@/app/lib/cn";
+import { PRESS_ACTIVE_CLASSES, PRESS_TRANSITION_CLASSES } from "@/app/lib/motion";
 
 type CardProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
@@ -16,8 +17,9 @@ export function Card({ className, children, interactive = false, ...props }: Car
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border bg-surface-solid/70 p-4 shadow-[var(--shadow-glass)] backdrop-blur-md transition-colors",
-        interactive && "cursor-pointer hover:border-accent/40 hover:bg-accent-soft",
+        "rounded-2xl border border-border bg-surface-solid/70 p-4 shadow-[var(--shadow-glass)] backdrop-blur-md",
+        PRESS_TRANSITION_CLASSES,
+        interactive && cn("cursor-pointer hover:border-accent/40 hover:bg-accent-soft", PRESS_ACTIVE_CLASSES),
         className,
       )}
       {...props}

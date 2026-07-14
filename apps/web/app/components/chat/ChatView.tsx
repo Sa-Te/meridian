@@ -9,6 +9,7 @@ import { Button } from "@/app/components/ui/Button";
 import { Input } from "@/app/components/ui/Input";
 import { Panel } from "@/app/components/ui/Panel";
 import { askQuestion, toErrorMessage } from "@/app/lib/api/client";
+import { ENTER_TRANSITION_CLASSES } from "@/app/lib/motion";
 import type { AskResponse } from "@/app/lib/api/types";
 
 import { MeetingScopeSelect } from "./MeetingScopeSelect";
@@ -73,20 +74,20 @@ export function ChatView() {
       </Panel>
 
       {loading && (
-        <Panel data-testid="chat-loading">
+        <Panel data-testid="chat-loading" className={ENTER_TRANSITION_CLASSES}>
           <p className="text-sm text-muted-foreground">Thinking...</p>
         </Panel>
       )}
 
       {error && (
-        <Panel data-testid="chat-error">
+        <Panel data-testid="chat-error" className={ENTER_TRANSITION_CLASSES}>
           <Badge tone="danger">Error</Badge>
           <p className="mt-2 text-sm text-foreground">{error}</p>
         </Panel>
       )}
 
       {answer && !loading && answer.supported && (
-        <Panel data-testid="chat-answer">
+        <Panel data-testid="chat-answer" className={ENTER_TRANSITION_CLASSES}>
           <p className="text-sm leading-relaxed text-foreground">{answer.answer}</p>
           {answer.citations.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
@@ -99,7 +100,7 @@ export function ChatView() {
       )}
 
       {answer && !loading && !answer.supported && (
-        <Panel data-testid="chat-declined">
+        <Panel data-testid="chat-declined" className={ENTER_TRANSITION_CLASSES}>
           <Badge tone="neutral">Not well-supported</Badge>
           <p className="mt-2 text-sm text-muted-foreground">{answer.answer}</p>
         </Panel>

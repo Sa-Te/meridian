@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 
 import { cn } from "@/app/lib/cn";
+import { PRESS_ACTIVE_CLASSES, PRESS_TRANSITION_CLASSES } from "@/app/lib/motion";
 
 type ButtonVariant = "primary" | "secondary" | "ghost";
 
@@ -24,7 +25,9 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors",
+        "inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium",
+        PRESS_TRANSITION_CLASSES,
+        PRESS_ACTIVE_CLASSES,
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50",
         "disabled:cursor-not-allowed disabled:opacity-50",
         variantClasses[variant],

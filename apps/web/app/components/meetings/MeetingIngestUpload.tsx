@@ -6,6 +6,8 @@ import { Badge } from "@/app/components/ui/Badge";
 import { Button } from "@/app/components/ui/Button";
 import { Panel } from "@/app/components/ui/Panel";
 import { ingestMeeting, toErrorMessage } from "@/app/lib/api/client";
+import { cn } from "@/app/lib/cn";
+import { ENTER_TRANSITION_CLASSES } from "@/app/lib/motion";
 import type { IngestResponse } from "@/app/lib/api/types";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -85,11 +87,13 @@ export function MeetingIngestUpload({ onIngested }: MeetingIngestUploadProps) {
       </div>
 
       {status === "uploading" && fileName && (
-        <p className="mt-4 text-sm text-muted-foreground">Uploading {fileName}...</p>
+        <p className={cn("mt-4 text-sm text-muted-foreground", ENTER_TRANSITION_CLASSES)}>
+          Uploading {fileName}...
+        </p>
       )}
 
       {status === "success" && result && (
-        <div className="mt-4 flex flex-col gap-2">
+        <div className={cn("mt-4 flex flex-col gap-2", ENTER_TRANSITION_CLASSES)}>
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone="accent">Ingested</Badge>
             {result.flagged_for_prompt_injection && (
@@ -103,7 +107,9 @@ export function MeetingIngestUpload({ onIngested }: MeetingIngestUploadProps) {
         </div>
       )}
 
-      {status === "error" && error && <p className="mt-4 text-sm text-danger">{error}</p>}
+      {status === "error" && error && (
+        <p className={cn("mt-4 text-sm text-danger", ENTER_TRANSITION_CLASSES)}>{error}</p>
+      )}
     </Panel>
   );
 }

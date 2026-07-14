@@ -3,7 +3,9 @@
 import { useState } from "react";
 
 import { Card } from "@/app/components/ui/Card";
+import { cn } from "@/app/lib/cn";
 import { formatTimestamp } from "@/app/lib/format";
+import { ENTER_TRANSITION_CLASSES } from "@/app/lib/motion";
 import type { Citation } from "@/app/lib/api/types";
 
 interface CitationChipProps {
@@ -32,7 +34,7 @@ export function CitationChip({ citation }: CitationChipProps) {
       </button>
 
       {expanded && (
-        <Card className="mt-2 max-w-md text-sm">
+        <Card className={cn("mt-2 max-w-md text-sm", ENTER_TRANSITION_CLASSES)}>
           <p className="font-medium text-foreground">
             {citation.speaker}{" "}
             <span className="font-normal text-muted-foreground">

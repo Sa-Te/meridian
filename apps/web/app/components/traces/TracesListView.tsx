@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/app/components/ui/Button";
 import { Panel } from "@/app/components/ui/Panel";
 import { listTraces, toErrorMessage } from "@/app/lib/api/client";
+import { cn } from "@/app/lib/cn";
+import { LIST_ENTER_CLASSES, staggerDelayStyle } from "@/app/lib/motion";
 import type { Trace, TraceOutcome } from "@/app/lib/api/types";
 
 import { TraceFilters } from "./TraceFilters";
@@ -96,9 +98,16 @@ export function TracesListView() {
         <p className="text-sm text-muted-foreground">No traces match the selected filters.</p>
       )}
 
-      <div className="flex flex-col gap-3">
-        {traces.map((trace) => (
-          <TraceListRow key={trace.id} trace={trace} />
+      <div
+        className={cn(
+          "flex flex-col gap-3 transition-opacity duration-[var(--duration-base)] ease-[var(--ease-out)]",
+          loading && "opacity-40",
+        )}
+      >
+        {traces.map((trace, index) => (
+          <div key={trace.id} className={LIST_ENTER_CLASSES} style={staggerDelayStyle(index)}>
+            <TraceListRow trace={trace} />
+          </div>
         ))}
       </div>
 

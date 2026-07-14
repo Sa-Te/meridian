@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/app/components/ui/Badge";
 import { Card } from "@/app/components/ui/Card";
 import { listMeetingActionItems, listMeetingDecisions, toErrorMessage } from "@/app/lib/api/client";
+import { LIST_ENTER_CLASSES, staggerDelayStyle } from "@/app/lib/motion";
 import type { ActionItem, ActionItemStatus, Decision } from "@/app/lib/api/types";
 
 import { ActionItemFilters } from "./ActionItemFilters";
@@ -119,8 +120,12 @@ export function MeetingTimeline({ meetingId }: MeetingTimelineProps) {
       )}
 
       <ol className="flex flex-col gap-3">
-        {entries.map((entry) => (
-          <li key={`${entry.kind}-${entry.item.id}`}>
+        {entries.map((entry, index) => (
+          <li
+            key={`${entry.kind}-${entry.item.id}`}
+            className={LIST_ENTER_CLASSES}
+            style={staggerDelayStyle(index)}
+          >
             <TimelineEntryCard entry={entry} />
           </li>
         ))}

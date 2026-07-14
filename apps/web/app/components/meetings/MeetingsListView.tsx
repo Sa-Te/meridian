@@ -7,6 +7,7 @@ import { Card } from "@/app/components/ui/Card";
 import { Panel } from "@/app/components/ui/Panel";
 import { MeetingIngestUpload } from "@/app/components/meetings/MeetingIngestUpload";
 import { listMeetings, toErrorMessage } from "@/app/lib/api/client";
+import { LIST_ENTER_CLASSES, staggerDelayStyle } from "@/app/lib/motion";
 import type { MeetingSummary } from "@/app/lib/api/types";
 
 export function MeetingsListView() {
@@ -71,8 +72,13 @@ export function MeetingsListView() {
       )}
 
       <div className="flex flex-col gap-3">
-        {meetings.map((meeting) => (
-          <Link key={meeting.id} href={`/meetings/${meeting.id}`}>
+        {meetings.map((meeting, index) => (
+          <Link
+            key={meeting.id}
+            href={`/meetings/${meeting.id}`}
+            className={LIST_ENTER_CLASSES}
+            style={staggerDelayStyle(index)}
+          >
             <Card interactive>
               <p className="font-medium text-foreground">{meeting.title}</p>
               <p className="mt-1 text-xs text-muted-foreground">

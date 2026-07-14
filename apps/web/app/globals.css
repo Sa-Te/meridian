@@ -25,6 +25,10 @@
     0 1px 1px rgba(20, 30, 32, 0.04),
     0 8px 20px rgba(20, 30, 32, 0.07);
   --shadow-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --duration-press: 140ms;
+  --duration-base: 200ms;
 }
 
 @media (prefers-color-scheme: dark) {
