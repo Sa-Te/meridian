@@ -501,20 +501,20 @@ involving MCPs" — almost no other candidate's submission will have this.
 **Prompt:**
 
 ```
-1. Run coverage reports for both apps. Identify any untested branch in
-   business logic (chunking, retrieval fusion, extraction, guardrails,
-   tracing) — trivial code (simple getters, framework boilerplate) does
-   not need tests, but no business-logic branch should be uncovered.
-   Fill the real gaps.
+   1. Run coverage reports for both apps. Identify any untested branch in
+      business logic (chunking, retrieval fusion, extraction, guardrails,
+      tracing) — trivial code (simple getters, framework boilerplate) does
+      not need tests, but no business-logic branch should be uncovered.
+      Fill the real gaps.
 
-2. Ensure CI runs, in order, and fails fast on: lint, type-check, unit
-   tests, integration tests, eval-suite gate, then builds and tags Docker
-   images on success. Add a status badge to the README stub.
+   2. Ensure CI runs, in order, and fails fast on: lint, type-check, unit
+      tests, integration tests, eval-suite gate, then builds and tags Docker
+      images on success. Add a status badge to the README stub.
 
-3. Do a full docker compose up from a clean checkout (no cached state) and
-   confirm the whole system works end to end with just .env populated from
-   .env.example plus a real ANTHROPIC_API_KEY. Fix anything that only
-   worked because of leftover local state.
+   3. Do a full docker compose up from a clean checkout (no cached state) and
+      confirm the whole system works end to end with just .env populated from
+      .env.example plus a real ANTHROPIC_API_KEY. Fix anything that only
+      worked because of leftover local state.
 ```
 
 **Definition of done:**
