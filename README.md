@@ -372,6 +372,31 @@ structured-output mode, each one guardrail-checked individually (a bad
 citation drops only that one item, not the whole batch) and dropped
 below a confidence threshold rather than recorded as fact.
 
+**Prompt and context management (ADR-0006, ADR-0007).** The context sent
+to the model is exactly the retrieved chunks, speaker-turn-aware and
+tagged with their own `chunk_id`, nothing more. One prompt per question,
+built from the top-K fused results, asking the model to name which chunk
+backs each claim it makes. There's no conversation memory and no
+summarization step across turns, since this is single-turn question
+answering over pre-chunked transcripts, not a running chat session with
+history to manage yet.
+
+**Quality (ADR-0009).** Two metrics, run together on every push to `main`:
+retrieval hit-rate against a twenty-question golden dataset, and an
+LLM-as-judge score for faithfulness and relevance on the generated
+answer. Retrieval metrics alone would miss a generation bug; judge
+metrics alone couldn't tell a retrieval miss from the model simply
+getting it wrong. The honest caveat: Gemini judges Gemini's own answers,
+a self-preference bias named in the ADR and picked up again in Section 8.
+
+**Observability (ADR-0010).** Every `/ask` and `/meetings/ingest` request
+is traced stage by stage, provider calls, timings, token counts, and
+outcome, through decorators wrapped around the same `LLMProvider`/
+`EmbeddingProvider` interfaces already built for swapping vendors. None
+of that tracing logic sits inside chunking, retrieval, or extraction
+themselves. Traces are queryable via `GET /traces` and browsable in the
+web app's own Traces dashboard.
+
 ---
 
 ## 5. Key technical decisions and why
@@ -454,115 +479,122 @@ things discovered missing after the fact):
 
 ## 7. How AI coding tools were used
 
-The whole thing was built via instruction, not manual coding, in the sense
-that Claude Code performed the implementation after I defined what the
-"Done" was for each phase, my roadmap, ADR, testing standards (which live
-in `CLAUDE.md`), and tech stack before writing any code. The build was
-guided, not opportunistic.
+This project was built by giving instructions, not by typing the code
+myself. Before Claude Code wrote a single line, I'd already written the
+roadmap, set up the ADR process, decided on the testing standards and
+picked the tech stack, all of it sitting in `CLAUDE.md`. Every phase had
+its own definition of done, agreed before any work on it started. The
+build was guided from the beginning, not something that happened
+opportunistically as ideas turned up mid-session.
 
-I was there to check things out and guide, not to code. The two things
-that proved critical were:
+My job was to check things and steer, not to code. Two habits mattered
+more than anything else.
 
-Firstly, every single "done" state was double-checked with a quick browser
-and/or API poke. Otherwise, the whole second stage would have sailed right
-on past because tests were passing, but the API endpoint that stage
-exposed returned 404 because it was pointed at an outdated Docker image
-(rather than a code problem) — I only found out by poking it live, not
-trusting the test report.
+First, I never trusted a green test suite on its own. Every "done" state
+got a quick poke in a real browser or with a real API call before I signed
+off on it. That habit paid for itself early on: in one of the middle
+phases, every test was passing, but the actual endpoint that phase was
+meant to expose was returning a 404, because it was pointing at an old
+Docker image rather than the new code. Nothing wrong with the code at all.
+I only caught that by hitting it live, not by reading the test report.
+The same thing happened again much later, while I was writing the manual
+QA script that's now `TESTING.md` in this repo: the MCP server's setup was
+quietly broken, a virtual environment it needed simply didn't exist yet,
+and the README pointed readers at a setup section that had never actually
+been written. No test would have caught either of those. Poking the
+running thing did, both times.
 
-Secondly, consequential decisions weren't just made by the tool. In the
-extraction logic, a true fork in approach occurred – should native
-vendor-structured-output be parsed (with its myriad of vendor-specific
-quirks), or stick with the simpler plain-JSON format which had already
-been in use? Claude Code prompted for a decision, rather than making a
-choice behind the scenes, and I made that call; furthermore, this decision
-was made in favour of only shipping the Gemini path since I had no ability
-to verify an Anthropic path with the provided API key (`docs/adr/0008`).
-The decision to default to Gemini over Anthropic, as mentioned in my
-prompt to use only Gemini, was similarly a real-world decision I made
-mid-build in response to the budget — worth being precise here, since it's
-a distinction the codebase itself insists on: Anthropic wasn't ripped out,
-it's properly still sat in `apps/api/app/providers/llm/anthropic_provider.py`
-as a second, genuinely working `LLMProvider` implementation
-(`docs/adr/0013`), just demoted from the default a fresh `docker compose
-up` reaches for.
+Second, I kept the decisions that actually mattered in my own hands rather
+than letting the tool make them quietly. A good example is the extraction
+logic. There was a genuine fork here: parse each vendor's own native
+structured-output format, quirks and all, or stick with the simpler plain
+text and JSON approach that generation already used. Claude Code laid out
+the fork and asked me to decide rather than picking on its own, and I went
+with native structured output, but only for Gemini. I had no working
+Anthropic key to test an Anthropic implementation against, so that path
+was left unimplemented on purpose, not by accident (`docs/adr/0008`).
+Making Gemini the default provider more generally was a separate call I
+made mid-build, in response to budget. Anthropic wasn't torn out of the
+codebase because of that decision though. It's still sat there as a
+second, genuinely working `LLMProvider` implementation, just not what a
+fresh `docker compose up` reaches for by default (`docs/adr/0013`).
 
-I reviewed every element of what was output by the tool against the
-principles and plans defined — scope drift, sensitive information being
-accidentally leaked, stack consistency, and alignment with our thought
-process regarding the tech choices and the architecture, all without
-needing to pore through the generated code end-to-end. I will do this full
-pass through the code itself before the tech interview, of course.
+I reviewed everything the tool produced against the plans and principles
+already agreed: scope creep, anything sensitive leaking out, whether the
+stack stayed consistent, whether the architecture actually matched how
+we'd reasoned it out together. I didn't need to read every generated line
+end to end while it was being written to do that, though I'll give the
+whole codebase a proper line-by-line read before the interview. What gave
+me some confidence along the way was the test suite itself: kept
+genuinely high on the business logic that matters, checked more than once
+during the build rather than left until the end.
 
-During this process, I kept an ongoing log in Obsidian – notes from AI
-sessions, significant design choices, and a focused debug log to capture
-problems as they emerged and the path taken to resolution (including one
-Docker build issue traced back to a problem with accessing a Windows
-mount from WSL, which I logged along with the cause and the fix). This
-log essentially captures how the entire AI-assisted process played out.
+Through all of this I kept a running log in Obsidian: notes from each
+session, the design calls that actually mattered, and a separate debug
+log for problems as they turned up, including one Docker build issue that
+traced back to trying to reach a Windows-mounted drive from inside WSL,
+written down with the cause and the fix both. Between the roadmap, the
+ADRs, and that log, there's a proper paper trail for how this whole thing
+came together.
 
 ---
 
 ## 8. What I'd do differently with more time
 
-Some concrete shortcomings revealed during the build, not the "digging for
-issues after the fact" ones that the post-build review highlights (e.g.,
-the unimplemented Anthropic structured output option, the LLM used for
-scoring being the same family as generation, PII/PHI was outside the
-scope, even though the problem statement was framed as health data) –
-these are intentional trade-offs made under pressure and not errors I
-missed. All three are properly documented as deliberate calls at the time,
-not things I only noticed in hindsight — the Anthropic gap in
-`docs/adr/0008`, the judge's self-preference bias in `docs/adr/0009` and
-`docs/adr/0013`, and the PII/PHI scope call in `docs/adr/0008` again.
-Fair enough to still want them closed eventually, but they were never
-blind spots.
+A few of the gaps below aren't things I found out about late. The
+unimplemented Anthropic structured-output path, the eval judge scoring
+answers from its own model family, and leaving PII and PHI redaction out
+of scope despite the brief being framed around health data: all three
+were decisions I made on purpose, under time pressure, not mistakes I
+missed. They're written down as such in the ADRs at the time (`docs/adr/0008`
+for the first and third, `docs/adr/0009` and `docs/adr/0013` for the
+second), not added afterwards to look tidy. Fair enough to want them
+properly closed one day, but they were never blind spots.
 
-Beyond those, if given more time, my priorities would be:
+Beyond those, here's where I'd actually spend more time, roughly in
+order:
 
-- **Deeper test coverage** – targeting more edge cases and the
-  guardrail/extraction paths using adversarial inputs rather than solely
-  focusing on the happy path. `docs/adr/0015` got branch coverage on the
-  business logic that exists genuinely high; the gap is adversarial and
-  edge-case inputs against that same logic, not untested happy-path code.
-- **Close the `df-2` retrieval gap** (`docs/adr/0009`): a genuine, measured
-  miss where the answer to a direct-fact question lives in a chunk that's
-  a bare number with no restated context, one turn away from the
-  question that gives it meaning. A cross-encoder re-ranker over a wider
-  candidate pool, or a chunking strategy that keeps a short window of
-  surrounding turns for very short chunks, are both plausible fixes —
-  neither was in scope for the phase whose job was to measure and report
-  the gap, not close it.
-- **A larger, better-sourced eval set** (`docs/adr/0009`): hundreds of
-  questions per category sourced from real logged queries rather than
-  20 hand-written ones, with a held-out slice never used for threshold
-  tuning.
-- **Expanded UI functionality** – while the core workflows are covered,
-  there's considerable room for enhancing the user interface. Concretely,
-  two gaps a manual QA pass turned up (see `TESTING.md`): audio ingestion
-  has no web UI at all today — only the FastAPI docs page can drive
-  `POST /meetings/ingest-audio` — and there's no way anywhere in the
-  system, UI or API, to ever mark an action item "in progress" or "done"
-  once it's extracted. The status filter's code is correct; it's just
-  filtering against data that can never exist yet.
-- **Implementing the Terraform** – transforming the document outline into
-  live, functional infrastructure as code and verifying the end-to-end
-  deployment process, not just describing it.
-- **A real production observability stack** (`docs/adr/0010`): structured
-  logs shipped to a real aggregator, actual OpenTelemetry instrumentation
-  with a real exporter, rolling-aggregate alerting, and a retention policy
-  — `traces` grows unboundedly today, fine at demo volume, not at real
-  volume.
-- **Full-fledged verification against real infrastructure** – the only
-  actual execution of this code to date has been within Docker Compose;
-  running it in a live environment against real infrastructure would be
-  the next step.
-- **Grow `useAsyncState` into something every view actually uses.** It
-  was built (`docs/adr/0014`) specifically to share the loading/data/error
-  shape across views, but a later coverage pass found no component
-  actually imports it — every view still hand-rolls the same triple
-  itself. A real DRY gap against my own stated engineering standard,
-  caught, not yet fixed.
+- Deeper test coverage. The branch coverage on the business logic is
+  genuinely high already (`docs/adr/0015`), but that's mostly the happy
+  path. I'd want adversarial inputs run against the guardrail and
+  extraction code specifically, the kind of malformed or hostile input a
+  real user would eventually send in.
+- Closing the `df-2` retrieval gap (`docs/adr/0009`): a real, measured
+  miss where the answer to a direct question sits in a chunk that's just
+  a bare number with no context restated, one turn away from the
+  question that would make sense of it. A cross-encoder re-ranker over a
+  wider candidate pool, or keeping a short window of surrounding turns
+  for very short chunks, both seem plausible. Neither was in scope for
+  the phase whose job was just to measure the gap and write it down, not
+  fix it.
+- A bigger, better-sourced eval set (`docs/adr/0009`): hundreds of real
+  logged questions per category rather than twenty hand-written ones,
+  with a held-out slice that never gets used for tuning thresholds.
+- More UI functionality generally. The core workflows all work, but
+  there's plenty of room here. Two gaps a manual QA pass turned up while
+  writing `TESTING.md`: there's no web interface for audio ingestion at
+  all, only the FastAPI docs page can drive that endpoint, and there's
+  genuinely no way anywhere in the system, UI or API, to ever mark an
+  action item "in progress" or "done" once it's been extracted. The
+  filter for those statuses is correct code. It's just filtering against
+  data that can never exist yet.
+- Actually standing up the Terraform. Turning the sketch into live
+  infrastructure and proving the deployment end to end, rather than only
+  describing what it would look like on paper.
+- A proper production observability setup (`docs/adr/0010`): structured
+  logs going somewhere real, actual OpenTelemetry with a real exporter,
+  alerting on rolling aggregates, a retention policy. The traces table
+  grows forever right now, which is fine at demo scale and not fine
+  beyond it.
+- Verifying all of this against real infrastructure. Everything so far
+  has only ever run inside Docker Compose. Running it against something
+  real would be the honest next step.
+- Growing `useAsyncState` into something every view actually uses. It was
+  built (`docs/adr/0014`) specifically to share the loading, data and
+  error shape across views, and a later coverage pass found that not one
+  component actually imports it. Every view still hand-rolls the same
+  pattern itself. A real gap against my own stated standard, caught but
+  not yet fixed.
 
 ---
 
@@ -592,6 +624,12 @@ one `declined` or `error` trace in the list, plus one trace detail view
 (`/traces/{id}`) with its full stage-by-stage breakdown expanded.
 
 `![Traces dashboard](docs/screenshots/traces-dashboard.png)`
+
+**4. Meeting ingest** — `/meetings`, right after uploading a `.txt`
+transcript, showing the "Ingested" badge and the chunk/decision/action-item
+counts it reports (see `TESTING.md` Part 1 for the exact steps).
+
+`![Meeting ingest](docs/screenshots/meeting-ingest.png)`
 
 Save the real image files under `docs/screenshots/` using the filenames
 above so these links resolve without further edits.
