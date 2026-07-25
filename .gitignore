@@ -18,6 +18,7 @@ build/
 # misc
 .DS_Store
 *.pem
+*:Zone.Identifier
 
 # debug
 npm-debug.log*
@@ -63,3 +64,17 @@ data/audio/_raw_clips/
 *.tfstate
 *.tfstate.*
 *.tfvars
+
+# Claude Code local tooling state -- per-machine permission allowlists,
+# MCP config, and installed agent skills. Not project source, never meant
+# to be shared or committed.
+.claude/
+.agents/
+skills-lock.json
+
+# Personal interview-prep scratch files for local coaching sessions with
+# Claude Code -- never meant for the submitted repo (see CLAUDE.md Section
+# 10 on AI-usage transparency: these describe exercises framed as interview
+# practice, not the project itself).
+INTERVIEW_PRACTICE.md
+Teach_First_Practice.md
