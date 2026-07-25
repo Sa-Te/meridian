@@ -57,6 +57,11 @@ eval/results/
 # see that script's docstring; only the .wav/.json it produces are checked in.
 data/audio/_raw_clips/
 
+# throwaway renamed copy TESTING.md Part 6 has testers make of
+# test_multi_speaker_sample.wav, to satisfy the ingest-audio endpoint's
+# filename-convention check -- not a fixture anything reads from.
+data/audio/2026-04-01_audio-test-fixture.wav
+
 # terraform (infra/terraform/ is a documented sketch, never applied --
 # see infra/terraform/README.md -- but local `terraform init`/`validate`
 # runs still generate these)

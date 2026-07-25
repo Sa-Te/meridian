@@ -108,14 +108,18 @@ writing this document.
 15. Scroll the timeline below the meeting header.
     **Expect:** a mix of entries in chronological order (by when they were
     said in the meeting, not extraction order):
-    - Two entries tagged with an accent **"Decision"** badge. One should be
-      the alert-threshold logic decision ("moves from a flat 160 threshold
-      to a patient-specific baseline plus 40 percent, sustained for three
-      minutes..."); the other should be the sign-off rule ("No patient-
-      facing alert changes will be released without final sign-off...").
+    - Two entries tagged with an accent **"Decision"** badge, each also
+      showing a second, neutral-toned severity badge (**Low**, **Medium**,
+      or **High** — the model's own judgment of clinical/regulatory/
+      operational risk, so the exact value can vary slightly run to run).
+      One should be the alert-threshold logic decision ("moves from a flat
+      160 threshold to a patient-specific baseline plus 40 percent,
+      sustained for three minutes..."); the other should be the sign-off
+      rule ("No patient-facing alert changes will be released without
+      final sign-off...").
     - Four entries tagged **"Open"** (action items), each with an owner
       name shown next to the badge (Dr. Mehta, Dr. Vasquez, Dr. Mehta,
-      Naomi across the four).
+      Naomi across the four) and a **"Mark Done"** button.
 16. Click any entry's citation chip.
     **Expect:** same expand behavior as Steps 10-11 — it reveals the
     speaker, timestamp, and exact excerpt that entry was extracted from.
@@ -129,23 +133,39 @@ writing this document.
     **Expect:** all four action items remain visible (they're all "Open"
     today) and the two decisions remain visible too — decisions are never
     filtered, only action items.
-19. Set the status filter to **"In progress"**, then to **"Done"**.
-    **Expect, for both:** all four action items disappear, and the text "No
-    action items match the selected filters." appears. The two decisions
-    stay visible (decisions are never filtered). **This is expected, not a
-    bug**, and it will look the same for *every* meeting you test, not just
-    this one: nothing anywhere in the current system can ever set an action
-    item's status to anything but "open" — there's no status-change control
-    in the UI and no API endpoint for it (confirmed by grep across the
-    whole backend). So "In progress" and "Done" will always show zero
+19. Set the status filter to **"In progress"**.
+    **Expect:** all four action items disappear, and the text "No action
+    items match the selected filters." appears. The two decisions stay
+    visible (decisions are never filtered). **This is expected, not a
+    bug**: an action item's status can be "open", "in_progress", or
+    "done" in the data model, but nothing in the current UI has a control
+    that moves an item to "in_progress" specifically (only "open" ->
+    "done", via the button below) — so this filter will always show zero
     action items today, no matter which meeting or how much data you
-    ingest. The filter logic itself is correct; the gap is that nothing can
-    ever produce data the other two options would match.
+    ingest. The filter logic itself is correct; the gap is that nothing
+    can ever produce data this option would match.
+
+    Reset the status filter to **"All statuses"**. On the ACSM
+    sanity-check item (owned by Dr. Mehta), click **Mark Done**.
+    **Expect:** the button briefly reads "Marking...", then that item's
+    badge changes from "Open" to "Done" in place and its "Mark Done"
+    button disappears — no page reload. Reload the page to confirm this
+    persisted (it's a real `PATCH` to the backend, not just local UI
+    state) — the item should still show "Done".
+
+    Now set the status filter to **"Done"**, then to **"Open"**.
+    **Expect:** with "Done" selected, only the ACSM sanity-check item is
+    visible among the action items; with "Open" selected, the other three
+    are visible and it isn't. The two decisions stay visible either way.
+    Note: there's currently no control in the UI to reopen a "Done" item
+    back to "Open" — that would need a direct `PATCH` via the API docs
+    page, same pattern as Part 6's audio ingest.
 20. Reset the status filter to **"All statuses"**, then set the owner
     filter to **"Dr. Mehta"**.
     **Expect:** only the two action items owned by Dr. Mehta remain (the
-    ACSM sanity-check item and the arrhythmia policy item); the other two
-    owners' items disappear, decisions stay visible.
+    ACSM sanity-check item, now showing "Done", and the arrhythmia policy
+    item, still "Open"); the other two owners' items disappear, decisions
+    stay visible.
 21. Reset the owner filter to **"All owners"** before moving on.
 
 ## Part 6 — Audio ingest (via the API docs page, not the web app)
@@ -224,7 +244,7 @@ normal clickable browser UI.
     after the guardrail stage (no `generate_answer` stage — the guardrail
     declined before an LLM call was made). Each card shows the stage's
     duration and, where applicable, metadata like `retrieved_count` or
-    `passed`.
+    `tier` (one of `confident`, `low_confidence`, or `decline`).
 36. Go back to Traces and click the row for the audio-ingest request from
     Part 6.
     **Expect:** its stage list includes **`transcribe`** and **`diarize`**
@@ -263,7 +283,10 @@ setup, from the repo root:
     this tool is a thin HTTP wrapper around the same `/ask` endpoint.
 42. Ask it to call `get_action_items` with no filters, then again with
     `status` "open".
-    **Expect:** both calls return the same list — every action item ever
-    extracted, across every meeting you've ingested (there is currently no
-    way for an action item to have any status other than "open" — see the
-    note on this in Part 5).
+    **Expect:** the unfiltered call returns every action item ever
+    extracted across every meeting you've ingested, including the ACSM
+    sanity-check item you marked "done" in Part 5 (status `"done"` in the
+    response); the `status: "open"` call returns the same list minus that
+    one item. This tool is read-only — it has no way to change an item's
+    status itself, only the web UI's "Mark Done" button and the
+    `PATCH /meetings/{id}/action-items/{id}` endpoint can do that (Part 5).
