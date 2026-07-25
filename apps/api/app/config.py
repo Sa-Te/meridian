@@ -88,6 +88,12 @@ class Settings(BaseSettings):
         "answer at all. Below this, the system declines rather than guessing. A "
         "starting heuristic pending Phase 5 eval-based tuning. See ADR-0008.",
     )
+    retrieval_low_confidence_floor: float = Field(
+        default=0.15,
+        description="Below retrieval_confidence_threshold but at or above this floor: "
+        "still attempt an answer, flagged low-confidence, rather than declining outright. "
+        "Below this floor, the system still declines. See ADR-0008.",
+    )
     extraction_confidence_threshold: float = Field(
         default=0.5,
         description="Minimum self-reported confidence for an extracted Decision or "

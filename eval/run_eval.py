@@ -47,7 +47,10 @@ from app.providers.llm.factory import get_llm_provider
 from app.repositories.chunk_repository import ChunkRepository
 from app.repositories.meeting_repository import MeetingRepository
 from app.services.answer_generation import UNSUPPORTED_ANSWER, generate_answer
-from app.services.guardrails.output_guardrail import passes_retrieval_confidence
+from app.services.guardrails.output_guardrail import (
+    ConfidenceTier,
+    classify_retrieval_confidence,
+)
 from app.services.ingestion import ingest_transcript
 from app.services.retrieval import RetrievedChunk, hybrid_search
 from eval.caching_llm_provider import CachingLLMProvider
@@ -173,8 +176,12 @@ async def _score_question(
     precision = None if is_out_of_scope else precision_at_k(retrieved_ids, expected_chunk_ids)
     recall = None if is_out_of_scope else recall_at_k(retrieved_ids, expected_chunk_ids)
 
-    confidence_threshold = settings.retrieval_confidence_threshold
-    if not passes_retrieval_confidence(retrieved, threshold=confidence_threshold):
+    tier = classify_retrieval_confidence(
+        retrieved,
+        threshold=settings.retrieval_confidence_threshold,
+        low_confidence_floor=settings.retrieval_low_confidence_floor,
+    )
+    if tier is ConfidenceTier.DECLINE:
         answer, supported, cited_ids = UNSUPPORTED_ANSWER, False, set[UUID]()
     else:
         await _llm_rate_limiter.wait()

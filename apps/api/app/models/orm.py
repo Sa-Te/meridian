@@ -37,6 +37,12 @@ class ActionItemStatus(StrEnum):
     DONE = "done"
 
 
+class SeverityItem(StrEnum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
 class Meeting(Base):
     """A single ingested transcript and its metadata. See docs/adr/0005."""
 
@@ -137,6 +143,16 @@ class Decision(Base):
     meeting: Mapped["Meeting"] = relationship(back_populates="decisions")
     source_chunk: Mapped["Chunk"] = relationship(back_populates="decisions")
 
+    severity: Mapped["SeverityItem"] = mapped_column(
+        Enum(
+            SeverityItem,
+            name="severity_category_items",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
+        default=SeverityItem.MEDIUM,
+    )
+
 
 class ActionItem(Base):
     """An action item extracted from a meeting, grounded in one source chunk.
@@ -158,6 +174,7 @@ class ActionItem(Base):
     text: Mapped[str] = mapped_column(Text, nullable=False)
     owner: Mapped[str | None] = mapped_column(String(255), nullable=True)
     due_date: Mapped[date_type | None] = mapped_column(Date, nullable=True)
+    completed_at: Mapped[date_type | None] = mapped_column(Date, nullable=True)
     source_chunk_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("chunks.id", ondelete="CASCADE"), nullable=False, index=True
     )

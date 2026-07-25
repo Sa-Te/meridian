@@ -16,7 +16,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, ValidationError
 
-from app.models.orm import ActionItem, Chunk, Decision
+from app.models.orm import ActionItem, Chunk, Decision, SeverityItem
 from app.providers.llm.base import LLMProvider
 from app.services.guardrails.output_guardrail import citation_ids_are_valid
 
@@ -35,7 +35,14 @@ _SYSTEM_PROMPT = (
     "stated explicitly, not implied or guessed at. For an action item, set "
     "owner to the name of the person responsible if the transcript names "
     "one, otherwise null; set due_date only if an explicit calendar date is "
-    'stated (not a relative phrase like "next sprint"), otherwise null.\n\n'
+    'stated (not a relative phrase like "next sprint"), otherwise null. '
+    "For every decision, set severity to exactly low, medium, or high based "
+    "on its clinical, regulatory, or operational risk. Use high only when a "
+    "decision affects clinical safety, strict legal and regulatory compliance, "
+    "or critical system architecture. Use low only for minor UI adjustments, "
+    "developer style preferences, or low-stakes engineering conventions. For "
+    "broader operational changes, timeline shifts, or when the true impact "
+    "is ambiguous or unclear, default to medium.\n\n"
     "If the transcript contains no decisions, or no action items, return an "
     "empty list for that field -- do not invent one to avoid an empty "
     "response."
@@ -53,6 +60,7 @@ class ExtractedDecision:
     text: str
     source_chunk_id: UUID
     confidence: float
+    severity: SeverityItem
 
 
 @dataclass(frozen=True)
@@ -74,6 +82,7 @@ class _LLMDecision(BaseModel):
     text: str
     source_chunk_id: UUID
     confidence: float = Field(ge=0.0, le=1.0)
+    severity: SeverityItem
 
 
 class _LLMActionItem(BaseModel):
@@ -111,7 +120,10 @@ def _filter_guardrailed(
     """
     decisions = [
         ExtractedDecision(
-            text=item.text, source_chunk_id=item.source_chunk_id, confidence=item.confidence
+            text=item.text,
+            source_chunk_id=item.source_chunk_id,
+            confidence=item.confidence,
+            severity=item.severity,
         )
         for item in payload.decisions
         if item.confidence >= confidence_threshold
@@ -179,7 +191,12 @@ async def extract_records(
 
 def to_orm_decisions(decisions: Sequence[ExtractedDecision]) -> list[Decision]:
     return [
-        Decision(text=item.text, source_chunk_id=item.source_chunk_id, confidence=item.confidence)
+        Decision(
+            text=item.text,
+            source_chunk_id=item.source_chunk_id,
+            confidence=item.confidence,
+            severity=item.severity,
+        )
         for item in decisions
     ]
 

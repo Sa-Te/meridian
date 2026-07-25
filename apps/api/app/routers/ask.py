@@ -15,7 +15,7 @@ from app.repositories.chunk_repository import ChunkRepository
 from app.repositories.meeting_repository import MeetingRepository
 from app.repositories.trace_repository import TraceRepository
 from app.services.answer_generation import UNSUPPORTED_ANSWER, generate_answer
-from app.services.guardrails.output_guardrail import passes_retrieval_confidence
+from app.services.guardrails.output_guardrail import ConfidenceTier, classify_retrieval_confidence
 from app.services.retrieval import hybrid_search
 from app.services.tracing import TraceRecorder, TracingEmbeddingProvider, TracingLLMProvider
 
@@ -66,14 +66,18 @@ async def _ask(
             stage_metadata["retrieved_count"] = len(retrieved)
 
         async with recorder.stage("guardrail_confidence_check") as stage_metadata:
-            confidence_ok = passes_retrieval_confidence(
-                retrieved, threshold=settings.retrieval_confidence_threshold
+            tier = classify_retrieval_confidence(
+                retrieved,
+                threshold=settings.retrieval_confidence_threshold,
+                low_confidence_floor=settings.retrieval_low_confidence_floor,
             )
-            stage_metadata["passed"] = confidence_ok
+            stage_metadata["tier"] = tier.value
 
-        if not confidence_ok:
+        if tier is ConfidenceTier.DECLINE:
             outcome = TraceOutcome.DECLINED
-            return AskResponse(answer=UNSUPPORTED_ANSWER, supported=False, citations=[])
+            return AskResponse(
+                answer=UNSUPPORTED_ANSWER, supported=False, low_confidence=False, citations=[]
+            )
 
         chunks_by_id = {r.chunk.id: r.chunk for r in retrieved}
 
@@ -99,7 +103,12 @@ async def _ask(
             if (chunk := chunks_by_id.get(citation.chunk_id)) is not None
         ]
         outcome = TraceOutcome.ANSWERED if result.supported else TraceOutcome.DECLINED
-        return AskResponse(answer=result.answer, supported=result.supported, citations=citations)
+        return AskResponse(
+            answer=result.answer,
+            supported=result.supported,
+            low_confidence=tier is ConfidenceTier.LOW_CONFIDENCE,
+            citations=citations,
+        )
     finally:
         await TraceRepository(session).create(recorder.to_orm(outcome=outcome))
 

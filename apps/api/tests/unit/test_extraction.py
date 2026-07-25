@@ -1,7 +1,7 @@
 import uuid
 from datetime import date
 
-from app.models.orm import Chunk
+from app.models.orm import Chunk, SeverityItem
 from app.services.extraction import (
     ExtractedActionItem,
     ExtractedDecision,
@@ -45,6 +45,7 @@ async def test_valid_decision_and_action_item_are_kept() -> None:
                 text="We will ship the new alert threshold.",
                 source_chunk_id=chunk.id,
                 confidence=0.9,
+                severity=SeverityItem.MEDIUM,
             )
         ],
         action_items=[
@@ -65,7 +66,10 @@ async def test_valid_decision_and_action_item_are_kept() -> None:
 
     assert result.decisions == [
         ExtractedDecision(
-            text="We will ship the new alert threshold.", source_chunk_id=chunk.id, confidence=0.9
+            text="We will ship the new alert threshold.",
+            source_chunk_id=chunk.id,
+            confidence=0.9,
+            severity=SeverityItem.MEDIUM,
         )
     ]
     assert result.action_items == [
@@ -84,8 +88,18 @@ async def test_low_confidence_item_is_dropped_but_others_are_kept() -> None:
     chunk = _chunk()
     payload = _LLMExtractionPayload(
         decisions=[
-            _LLMDecision(text="Confident decision.", source_chunk_id=chunk.id, confidence=0.9),
-            _LLMDecision(text="Unsure decision.", source_chunk_id=chunk.id, confidence=0.2),
+            _LLMDecision(
+                text="Confident decision.",
+                source_chunk_id=chunk.id,
+                confidence=0.9,
+                severity=SeverityItem.LOW,
+            ),
+            _LLMDecision(
+                text="Unsure decision.",
+                source_chunk_id=chunk.id,
+                confidence=0.2,
+                severity=SeverityItem.LOW,
+            ),
         ],
         action_items=[],
     )
@@ -122,7 +136,14 @@ async def test_hallucinated_source_chunk_id_is_dropped_but_others_are_kept() -> 
 async def test_failed_first_generation_triggers_one_retry_then_succeeds() -> None:
     chunk = _chunk()
     payload = _LLMExtractionPayload(
-        decisions=[_LLMDecision(text="Decision.", source_chunk_id=chunk.id, confidence=0.9)],
+        decisions=[
+            _LLMDecision(
+                text="Decision.",
+                source_chunk_id=chunk.id,
+                confidence=0.9,
+                severity=SeverityItem.MEDIUM,
+            )
+        ],
         action_items=[],
     )
     llm = FakeLLMProvider(structured_responses=[ValueError("truncated response"), payload])
@@ -150,7 +171,11 @@ async def test_two_failed_generations_fall_back_to_empty_result() -> None:
 
 def test_to_orm_decisions_maps_fields() -> None:
     chunk_id = uuid.uuid4()
-    decisions = [ExtractedDecision(text="X", source_chunk_id=chunk_id, confidence=0.7)]
+    decisions = [
+        ExtractedDecision(
+            text="X", source_chunk_id=chunk_id, confidence=0.7, severity=SeverityItem.HIGH
+        )
+    ]
 
     orm_decisions = to_orm_decisions(decisions)
 

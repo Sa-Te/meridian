@@ -14,6 +14,7 @@ from app.dependencies import (
 from app.models.orm import Meeting, TraceOutcome
 from app.models.schemas import (
     ActionItemRead,
+    ActionItemStatusUpdate,
     DecisionRead,
     IngestResponse,
     MeetingSummaryRead,
@@ -238,8 +239,10 @@ async def ingest_audio_meeting(
 
 
 @router.get("", response_model=list[MeetingSummaryRead])
-async def list_meetings(session: AsyncSession = Depends(get_db)) -> list[MeetingSummaryRead]:
-    meetings = await MeetingRepository(session).list_all()
+async def list_meetings(
+    participant: str | None = None, session: AsyncSession = Depends(get_db)
+) -> list[MeetingSummaryRead]:
+    meetings = await MeetingRepository(session).list_all(participant)
     return [MeetingSummaryRead.model_validate(meeting) for meeting in meetings]
 
 
@@ -278,6 +281,7 @@ async def get_meeting_decisions(
             text=decision.text,
             source_citation=build_citation(chunks_by_id[decision.source_chunk_id]),
             confidence=decision.confidence,
+            severity=decision.severity,
             created_at=decision.created_at,
         )
         for decision in meeting.decisions
@@ -300,6 +304,7 @@ async def get_meeting_action_items(
             text=item.text,
             owner=item.owner,
             due_date=item.due_date,
+            completed_at=item.completed_at,
             source_citation=build_citation(chunks_by_id[item.source_chunk_id]),
             confidence=item.confidence,
             status=item.status,
@@ -307,3 +312,38 @@ async def get_meeting_action_items(
         )
         for item in meeting.action_items
     ]
+
+
+@router.patch("/{meeting_id}/action-items/{action_item_id}", response_model=ActionItemRead)
+async def change_action_item_status(
+    meeting_id: UUID,
+    action_item_id: UUID,
+    body: ActionItemStatusUpdate,
+    session: AsyncSession = Depends(get_db),
+) -> ActionItemRead:
+    meeting_repo = MeetingRepository(session)
+    meeting = await meeting_repo.get_by_id(meeting_id)
+
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+
+    updated_item = await meeting_repo.change_action_item_status(
+        meeting, action_item_id, body.status
+    )
+
+    if updated_item is None:
+        raise HTTPException(status_code=404, detail="Action item not found.")
+
+    chunks_by_id = {chunk.id: chunk for chunk in meeting.chunks}
+    return ActionItemRead(
+        id=updated_item.id,
+        meeting_id=updated_item.meeting_id,
+        text=updated_item.text,
+        owner=updated_item.owner,
+        due_date=updated_item.due_date,
+        completed_at=updated_item.completed_at,
+        source_citation=build_citation(chunks_by_id[updated_item.source_chunk_id]),
+        confidence=updated_item.confidence,
+        status=updated_item.status,
+        created_at=updated_item.created_at,
+    )

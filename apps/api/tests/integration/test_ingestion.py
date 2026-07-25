@@ -14,7 +14,7 @@ from sqlalchemy import delete
 from app.db import async_session_factory, engine
 from app.dependencies import get_cached_embedding_provider, get_cached_llm_provider
 from app.main import app
-from app.models.orm import Meeting, Trace
+from app.models.orm import Meeting, SeverityItem, Trace
 from app.repositories.meeting_repository import MeetingRepository
 from app.services.extraction import (
     ExtractedActionItem,
@@ -164,6 +164,7 @@ async def test_add_extractions_attaches_meeting_id_to_decisions_and_action_items
                 text="Ship the roadmap as prioritized.",
                 source_chunk_id=target_chunk_id,
                 confidence=0.9,
+                severity=SeverityItem.MEDIUM,
             )
         ]
     )

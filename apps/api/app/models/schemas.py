@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.orm import ActionItemStatus, TraceOutcome
+from app.models.orm import ActionItemStatus, SeverityItem, TraceOutcome
 
 
 class MeetingCreate(BaseModel):
@@ -93,6 +93,7 @@ class DecisionCreate(BaseModel):
     text: str
     source_chunk_id: uuid.UUID
     confidence: float = Field(ge=0.0, le=1.0)
+    severity: SeverityItem = SeverityItem.MEDIUM
 
 
 class DecisionRead(BaseModel):
@@ -107,6 +108,7 @@ class DecisionRead(BaseModel):
     text: str
     source_citation: CitationRead
     confidence: float
+    severity: SeverityItem
     created_at: datetime
 
 
@@ -121,6 +123,10 @@ class ActionItemCreate(BaseModel):
     status: ActionItemStatus = ActionItemStatus.OPEN
 
 
+class ActionItemStatusUpdate(BaseModel):
+    status: ActionItemStatus
+
+
 class ActionItemRead(BaseModel):
     """API response shape for an ActionItem. See DecisionRead's docstring --
     same source_citation construction reasoning."""
@@ -130,6 +136,7 @@ class ActionItemRead(BaseModel):
     text: str
     owner: str | None
     due_date: date | None
+    completed_at: date | None
     source_citation: CitationRead
     confidence: float
     status: ActionItemStatus
@@ -167,6 +174,7 @@ class AskResponse(BaseModel):
 
     answer: str
     supported: bool
+    low_confidence: bool = False
     citations: list[CitationRead]
 
 

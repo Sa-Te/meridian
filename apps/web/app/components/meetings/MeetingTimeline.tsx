@@ -4,9 +4,17 @@ import { useEffect, useState } from "react";
 
 import { Badge } from "@/app/components/ui/Badge";
 import { Card } from "@/app/components/ui/Card";
-import { listMeetingActionItems, listMeetingDecisions, toErrorMessage } from "@/app/lib/api/client";
+import {
+  listMeetingActionItems,
+  listMeetingDecisions,
+  toErrorMessage,
+} from "@/app/lib/api/client";
 import { LIST_ENTER_CLASSES, staggerDelayStyle } from "@/app/lib/motion";
-import type { ActionItem, ActionItemStatus, Decision } from "@/app/lib/api/types";
+import type {
+  ActionItem,
+  ActionItemStatus,
+  Decision,
+} from "@/app/lib/api/types";
 
 import { ActionItemFilters } from "./ActionItemFilters";
 import { TimelineEntryCard } from "./TimelineEntryCard";
@@ -40,7 +48,10 @@ export function MeetingTimeline({ meetingId }: MeetingTimelineProps) {
     setLoading(true);
     setError(null);
 
-    Promise.all([listMeetingDecisions(meetingId), listMeetingActionItems(meetingId)])
+    Promise.all([
+      listMeetingDecisions(meetingId),
+      listMeetingActionItems(meetingId),
+    ])
       .then(([decisionData, actionItemData]) => {
         if (!cancelled) {
           setDecisions(decisionData);
@@ -85,7 +96,11 @@ export function MeetingTimeline({ meetingId }: MeetingTimelineProps) {
   }
 
   const owners = Array.from(
-    new Set(actionItems.map((item) => item.owner).filter((owner): owner is string => owner !== null)),
+    new Set(
+      actionItems
+        .map((item) => item.owner)
+        .filter((owner): owner is string => owner !== null),
+    ),
   ).sort();
 
   const filteredActionItems = actionItems.filter((item) => {
@@ -100,8 +115,25 @@ export function MeetingTimeline({ meetingId }: MeetingTimelineProps) {
 
   const entries: TimelineEntry[] = [
     ...decisions.map((item): TimelineEntry => ({ kind: "decision", item })),
-    ...filteredActionItems.map((item): TimelineEntry => ({ kind: "action_item", item })),
-  ].sort((a, b) => a.item.source_citation.start_ts - b.item.source_citation.start_ts);
+    ...filteredActionItems.map(
+      (item): TimelineEntry => ({ kind: "action_item", item }),
+    ),
+  ].sort(
+    (a, b) => a.item.source_citation.start_ts - b.item.source_citation.start_ts,
+  );
+
+  function handleActionItemStatusChange(
+    actionItemId: string,
+    newStatus: ActionItemStatus,
+  ) {
+    setActionItems((previous) =>
+      previous.map((actionItem) =>
+        actionItem.id === actionItemId
+          ? { ...actionItem, status: newStatus }
+          : actionItem,
+      ),
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -116,7 +148,9 @@ export function MeetingTimeline({ meetingId }: MeetingTimelineProps) {
       )}
 
       {entries.length === 0 && (
-        <p className="text-sm text-muted-foreground">No action items match the selected filters.</p>
+        <p className="text-sm text-muted-foreground">
+          No action items match the selected filters.
+        </p>
       )}
 
       <ol className="flex flex-col gap-3">
@@ -126,7 +160,10 @@ export function MeetingTimeline({ meetingId }: MeetingTimelineProps) {
             className={LIST_ENTER_CLASSES}
             style={staggerDelayStyle(index)}
           >
-            <TimelineEntryCard entry={entry} />
+            <TimelineEntryCard
+              entry={entry}
+              onActionItemStatusChange={handleActionItemStatusChange}
+            />
           </li>
         ))}
       </ol>

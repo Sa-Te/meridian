@@ -56,6 +56,7 @@ describe("ChatView", () => {
     vi.mocked(askQuestion).mockResolvedValue({
       answer: "Five to seven workouts.",
       supported: true,
+      low_confidence: false,
       citations: [
         {
           chunk_id: "c1",
@@ -85,6 +86,7 @@ describe("ChatView", () => {
     vi.mocked(askQuestion).mockResolvedValue({
       answer: "I could not find a well-supported answer to this question in the available transcripts.",
       supported: false,
+      low_confidence: false,
       citations: [],
     });
 

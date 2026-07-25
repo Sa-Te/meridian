@@ -26,10 +26,11 @@ drafted early in the sequence.
 | [0014](0014-frontend-architecture.md) | Frontend architecture |
 | [0015](0015-ci-coverage-and-pipeline-ordering.md) | Coverage tooling, the greenlet coverage blind spot, and fail-fast CI ordering |
 | [0016](0016-eval-suite-ci-gating-and-quota-conservation.md) | Move the eval-suite gate off the per-push CI pipeline |
+| [0017](0017-three-tier-retrieval-confidence.md) | Three-tier retrieval confidence (low-confidence middle ground) |
 
 ## Reading order for a reviewer short on time
 
-If you're not reading all sixteen: **0001** (why this product), **0004**
+If you're not reading all seventeen: **0001** (why this product), **0004**
 and **0007** (the two decisions the assignment most directly asks to see
 justified — vector storage/embeddings and retrieval strategy), **0009**
 (how quality is actually measured, with real numbers), and **0012** (the
@@ -49,3 +50,7 @@ amended one first, then the amendment, not the other way around:
 - **0016** supersedes the eval-suite-gate-placement portion of **0015**;
   everything else in 0015 (coverage tooling, the greenlet fix, fail-fast
   ordering within a push) still stands.
+- **0017** supersedes the binary `passes_retrieval_confidence` guardrail
+  described in **0008**'s "Guardrails as their own package" section;
+  everything else in 0008 (structured extraction, per-item filtering, the
+  input guardrail, PII scope) still stands.

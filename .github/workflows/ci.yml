@@ -167,7 +167,8 @@ jobs:
       # spends zero real Gemini calls here regardless: the fresh CI database
       # has no ingested meetings, so ask_meetings always declines before
       # reaching the LLM (see app/services/guardrails/output_guardrail.py's
-      # passes_retrieval_confidence on an empty retrieval set).
+      # classify_retrieval_confidence, which returns DECLINE on an empty
+      # retrieval set).
       - name: Start api server in the background
         working-directory: apps/api
         run: |

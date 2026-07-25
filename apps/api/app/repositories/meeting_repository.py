@@ -1,11 +1,12 @@
 from collections.abc import Sequence
+from datetime import date
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.orm import ActionItem, Decision, Meeting
+from app.models.orm import ActionItem, ActionItemStatus, Decision, Meeting
 
 
 class MeetingRepository:
@@ -49,6 +50,27 @@ class MeetingRepository:
         await self._session.refresh(meeting, attribute_names=["decisions", "action_items"])
         return meeting
 
+    async def change_action_item_status(
+        self, meeting: Meeting, action_item_id: UUID, status: ActionItemStatus
+    ) -> ActionItem | None:
+        """Updates one of an already-loaded Meeting's action items in place.
+
+        Takes the Meeting itself, not its id -- the router already fetches
+        it (to 404 on an unknown meeting and to build citations), and
+        `meeting.action_items` is eager-loaded by get_by_id, so a second
+        fetch here would just repeat the same query for no benefit.
+        """
+        action_item = next(
+            (item for item in meeting.action_items if item.id == action_item_id), None
+        )
+        if action_item is None:
+            return None
+
+        action_item.status = status
+        action_item.completed_at = date.today() if status is ActionItemStatus.DONE else None
+        await self._session.commit()
+        return action_item
+
     async def get_by_id(self, meeting_id: UUID) -> Meeting | None:
         result = await self._session.execute(
             select(Meeting)
@@ -61,14 +83,21 @@ class MeetingRepository:
         )
         return result.scalar_one_or_none()
 
-    async def list_all(self) -> list[Meeting]:
+    async def list_all(self, participant: str | None = None) -> list[Meeting]:
         """All meetings, newest first, for the meeting picker (GET /meetings,
         Phase 7). No eager-loading of chunks/decisions/action_items --
         MeetingSummaryRead only needs top-level Meeting fields, and loading
         every meeting's full chunk set here would be wasteful for a list
         view nobody needs full detail from.
         """
-        result = await self._session.execute(select(Meeting).order_by(Meeting.created_at.desc()))
+        stmt = select(Meeting).order_by(Meeting.created_at.desc())
+        if participant is not None:
+            # ARRAY.any() runs fine at runtime with a plain scalar (it
+            # compiles to `participant = ANY(meeting.participants)`), but
+            # its mypy stub is typed for relationship-comparator .any()
+            # (join criteria), not a plain value -- known stub gap.
+            stmt = stmt.where(Meeting.participants.any(participant))  # type: ignore[arg-type]
+        result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
     async def delete(self, meeting: Meeting) -> None:

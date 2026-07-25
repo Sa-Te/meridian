@@ -1,7 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { listMeetingActionItems, listMeetingDecisions } from "@/app/lib/api/client";
+import {
+  listMeetingActionItems,
+  listMeetingDecisions,
+} from "@/app/lib/api/client";
 import type { ActionItem, Decision } from "@/app/lib/api/types";
 
 import { MeetingTimeline } from "./MeetingTimeline";
@@ -34,6 +37,7 @@ const earlyDecision: Decision = {
   text: "Freeze the schema.",
   source_citation: citation(60, "Dhruvisha"),
   confidence: 0.9,
+  severity: "medium",
   created_at: "2026-01-29T00:00:00Z",
 };
 
@@ -43,6 +47,7 @@ const laterActionItem: ActionItem = {
   text: "Send the source by Friday.",
   owner: "Dr. Vasquez",
   due_date: null,
+  completed_at: null,
   source_citation: citation(400, "Dhruvisha"),
   confidence: 0.9,
   status: "open",
@@ -55,6 +60,7 @@ const doneActionItem: ActionItem = {
   text: "Already shipped this one.",
   owner: "Naomi",
   due_date: null,
+  completed_at: "2026-01-30",
   source_citation: citation(200, "Naomi"),
   confidence: 0.9,
   status: "done",
@@ -78,7 +84,10 @@ describe("MeetingTimeline", () => {
 
   it("renders decisions and action items merged in chronological order", async () => {
     vi.mocked(listMeetingDecisions).mockResolvedValue([earlyDecision]);
-    vi.mocked(listMeetingActionItems).mockResolvedValue([laterActionItem, doneActionItem]);
+    vi.mocked(listMeetingActionItems).mockResolvedValue([
+      laterActionItem,
+      doneActionItem,
+    ]);
 
     render(<MeetingTimeline meetingId="m1" />);
 
@@ -96,7 +105,10 @@ describe("MeetingTimeline", () => {
 
   it("filters action items by status while keeping decisions visible", async () => {
     vi.mocked(listMeetingDecisions).mockResolvedValue([earlyDecision]);
-    vi.mocked(listMeetingActionItems).mockResolvedValue([laterActionItem, doneActionItem]);
+    vi.mocked(listMeetingActionItems).mockResolvedValue([
+      laterActionItem,
+      doneActionItem,
+    ]);
 
     render(<MeetingTimeline meetingId="m1" />);
     await waitFor(() => screen.getByText("Freeze the schema."));
@@ -107,12 +119,17 @@ describe("MeetingTimeline", () => {
 
     expect(screen.getByText("Freeze the schema.")).toBeInTheDocument();
     expect(screen.getByText("Already shipped this one.")).toBeInTheDocument();
-    expect(screen.queryByText("Send the source by Friday.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Send the source by Friday."),
+    ).not.toBeInTheDocument();
   });
 
   it("filters action items by owner", async () => {
     vi.mocked(listMeetingDecisions).mockResolvedValue([]);
-    vi.mocked(listMeetingActionItems).mockResolvedValue([laterActionItem, doneActionItem]);
+    vi.mocked(listMeetingActionItems).mockResolvedValue([
+      laterActionItem,
+      doneActionItem,
+    ]);
 
     render(<MeetingTimeline meetingId="m1" />);
     await waitFor(() => screen.getByText("Send the source by Friday."));
@@ -121,7 +138,9 @@ describe("MeetingTimeline", () => {
       target: { value: "Naomi" },
     });
 
-    expect(screen.queryByText("Send the source by Friday.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Send the source by Friday."),
+    ).not.toBeInTheDocument();
     expect(screen.getByText("Already shipped this one.")).toBeInTheDocument();
   });
 
@@ -141,7 +160,9 @@ describe("MeetingTimeline", () => {
     ).toBeInTheDocument();
     // Distinct from the "nothing was extracted at all" empty state.
     expect(
-      screen.queryByText("No decisions or action items were extracted from this meeting."),
+      screen.queryByText(
+        "No decisions or action items were extracted from this meeting.",
+      ),
     ).not.toBeInTheDocument();
   });
 
@@ -153,7 +174,9 @@ describe("MeetingTimeline", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("No decisions or action items were extracted from this meeting."),
+        screen.getByText(
+          "No decisions or action items were extracted from this meeting.",
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -165,7 +188,9 @@ describe("MeetingTimeline", () => {
     render(<MeetingTimeline meetingId="m1" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Something went wrong. Please try again.")).toBeInTheDocument();
+      expect(
+        screen.getByText("Something went wrong. Please try again."),
+      ).toBeInTheDocument();
     });
   });
 });

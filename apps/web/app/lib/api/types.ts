@@ -13,6 +13,7 @@ export interface Citation {
 export interface AskResponse {
   answer: string;
   supported: boolean;
+  low_confidence: boolean;
   citations: Citation[];
 }
 
@@ -24,12 +25,15 @@ export interface MeetingSummary {
   created_at: string;
 }
 
+export type SeverityItem = "low" | "medium" | "high";
+
 export interface Decision {
   id: string;
   meeting_id: string;
   text: string;
   source_citation: Citation;
   confidence: number;
+  severity: SeverityItem;
   created_at: string;
 }
 
@@ -41,6 +45,7 @@ export interface ActionItem {
   text: string;
   owner: string | null;
   due_date: string | null;
+  completed_at: string | null;
   source_citation: Citation;
   confidence: number;
   status: ActionItemStatus;

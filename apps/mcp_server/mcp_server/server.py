@@ -38,7 +38,10 @@ async def ask_meetings(question: str, meeting_id: str | None = None) -> dict[str
     Scopes to one meeting if `meeting_id` is given, otherwise searches
     across every ingested meeting. The answer is declined
     (`supported: false`, with no citations) rather than guessed if
-    retrieval doesn't find strong enough supporting evidence.
+    retrieval doesn't find strong enough supporting evidence. A response
+    can also come back with `low_confidence: true` -- an answer was still
+    generated, but the supporting evidence was weaker than usual, so treat
+    it as a caveated rather than a fully trusted answer.
     """
     return await _client.ask(question=question, meeting_id=meeting_id)
 

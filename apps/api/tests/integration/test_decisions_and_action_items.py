@@ -95,8 +95,71 @@ async def test_get_meeting_action_items_returns_seeded_action_item() -> None:
     assert body[0]["id"] == str(action_item_id)
     assert body[0]["owner"] == "Dr. Vasquez"
     assert body[0]["status"] == "open"
+    assert body[0]["completed_at"] is None
     assert body[0]["source_citation"]["speaker"] == "Dr. Vasquez"
     assert body[0]["source_citation"]["text"] == "hello"
+
+
+async def test_patch_action_item_status_updates_seeded_action_item() -> None:
+    meeting_id, _, action_item_id = await _seed_meeting_with_extractions()
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.patch(
+            f"/meetings/{meeting_id}/action-items/{action_item_id}",
+            json={"status": "done"},
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] == str(action_item_id)
+    assert body["status"] == "done"
+    assert body["completed_at"] == date.today().isoformat()
+    assert body["source_citation"]["speaker"] == "Dr. Vasquez"
+
+
+async def test_patch_action_item_status_clears_completed_at_when_reopened() -> None:
+    meeting_id, _, action_item_id = await _seed_meeting_with_extractions()
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        await client.patch(
+            f"/meetings/{meeting_id}/action-items/{action_item_id}",
+            json={"status": "done"},
+        )
+        response = await client.patch(
+            f"/meetings/{meeting_id}/action-items/{action_item_id}",
+            json={"status": "open"},
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "open"
+    assert body["completed_at"] is None
+
+
+async def test_patch_action_item_status_404s_for_unknown_meeting() -> None:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.patch(
+            f"/meetings/{uuid.uuid4()}/action-items/{uuid.uuid4()}",
+            json={"status": "done"},
+        )
+
+    assert response.status_code == 404
+
+
+async def test_patch_action_item_status_404s_for_unknown_action_item() -> None:
+    meeting_id, _, _ = await _seed_meeting_with_extractions()
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.patch(
+            f"/meetings/{meeting_id}/action-items/{uuid.uuid4()}",
+            json={"status": "done"},
+        )
+
+    assert response.status_code == 404
 
 
 async def test_get_meeting_decisions_404s_for_unknown_meeting() -> None:

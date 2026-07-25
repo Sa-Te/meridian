@@ -1,5 +1,6 @@
 import type {
   ActionItem,
+  ActionItemStatus,
   AskResponse,
   Decision,
   IngestResponse,
@@ -24,7 +25,9 @@ export class ApiError extends Error {
 /** Converts anything a failed fetch might throw into a display-ready
  * message, for the `fail()` branch of useAsyncState's catch handlers. */
 export function toErrorMessage(error: unknown): string {
-  return error instanceof ApiError ? error.message : "Something went wrong. Please try again.";
+  return error instanceof ApiError
+    ? error.message
+    : "Something went wrong. Please try again.";
 }
 
 /** Reads the FastAPI `{"detail": "..."}` shape off a failed response, for
@@ -32,7 +35,10 @@ export function toErrorMessage(error: unknown): string {
  * request() because it forces a JSON Content-Type. */
 async function extractErrorDetail(response: Response): Promise<string> {
   const body: unknown = await response.json().catch(() => null);
-  return body !== null && typeof body === "object" && "detail" in body && typeof body.detail === "string"
+  return body !== null &&
+    typeof body === "object" &&
+    "detail" in body &&
+    typeof body.detail === "string"
     ? body.detail
     : response.statusText;
 }
@@ -50,7 +56,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function askQuestion(question: string, meetingId?: string): Promise<AskResponse> {
+export function askQuestion(
+  question: string,
+  meetingId?: string,
+): Promise<AskResponse> {
   const path = meetingId ? `/meetings/${meetingId}/ask` : "/ask";
   return request<AskResponse>(path, {
     method: "POST",
@@ -89,8 +98,24 @@ export function listMeetingDecisions(meetingId: string): Promise<Decision[]> {
   return request<Decision[]>(`/meetings/${meetingId}/decisions`);
 }
 
-export function listMeetingActionItems(meetingId: string): Promise<ActionItem[]> {
+export function listMeetingActionItems(
+  meetingId: string,
+): Promise<ActionItem[]> {
   return request<ActionItem[]>(`/meetings/${meetingId}/action-items`);
+}
+
+export function updateActionItemStatus(
+  meetingId: string,
+  actionItemId: string,
+  status: ActionItemStatus,
+): Promise<ActionItem> {
+  return request<ActionItem>(
+    `/meetings/${meetingId}/action-items/${actionItemId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    },
+  );
 }
 
 export interface ListTracesParams {
@@ -101,7 +126,9 @@ export interface ListTracesParams {
   offset?: number;
 }
 
-export function listTraces(params: ListTracesParams = {}): Promise<TraceListResponse> {
+export function listTraces(
+  params: ListTracesParams = {},
+): Promise<TraceListResponse> {
   const query = new URLSearchParams();
   if (params.endpoint) query.set("endpoint", params.endpoint);
   if (params.outcome) query.set("outcome", params.outcome);
@@ -109,7 +136,9 @@ export function listTraces(params: ListTracesParams = {}): Promise<TraceListResp
   if (params.limit !== undefined) query.set("limit", String(params.limit));
   if (params.offset !== undefined) query.set("offset", String(params.offset));
   const queryString = query.toString();
-  return request<TraceListResponse>(`/traces${queryString ? `?${queryString}` : ""}`);
+  return request<TraceListResponse>(
+    `/traces${queryString ? `?${queryString}` : ""}`,
+  );
 }
 
 export function getTrace(traceId: string): Promise<Trace> {

@@ -2,8 +2,9 @@ import uuid
 
 from app.models.orm import Chunk
 from app.services.guardrails.output_guardrail import (
+    ConfidenceTier,
     citation_ids_are_valid,
-    passes_retrieval_confidence,
+    classify_retrieval_confidence,
 )
 from app.services.retrieval import RetrievedChunk
 
@@ -53,14 +54,18 @@ def test_citation_ids_are_valid_works_for_a_single_source_chunk_id() -> None:
     assert citation_ids_are_valid([uuid.uuid4()], {valid_id}) is False
 
 
-# --- passes_retrieval_confidence ---
+# --- classify_retrieval_confidence ---
 
 
-def test_no_retrieved_chunks_fails_confidence() -> None:
-    assert passes_retrieval_confidence([], threshold=0.3) is False
+def _classify(retrieved: list[RetrievedChunk]) -> ConfidenceTier:
+    return classify_retrieval_confidence(retrieved, threshold=0.3, low_confidence_floor=0.15)
 
 
-def test_a_real_full_text_match_passes_regardless_of_vector_score() -> None:
+def test_no_retrieved_chunks_declines() -> None:
+    assert _classify([]) is ConfidenceTier.DECLINE
+
+
+def test_a_real_full_text_match_is_confident_regardless_of_vector_score() -> None:
     """text_score is only ever populated when Postgres's @@ operator found a
     genuine lexical match -- its presence alone is enough, independent of
     the (possibly weak or meaningless, e.g. from a fake embedding) vector
@@ -68,25 +73,37 @@ def test_a_real_full_text_match_passes_regardless_of_vector_score() -> None:
     """
     retrieved = [_retrieved(vector_score=0.01, text_score=0.05)]
 
-    assert passes_retrieval_confidence(retrieved, threshold=0.3) is True
+    assert _classify(retrieved) is ConfidenceTier.CONFIDENT
 
 
-def test_high_raw_vector_score_passes_with_no_text_match() -> None:
+def test_high_raw_vector_score_is_confident_with_no_text_match() -> None:
     retrieved = [_retrieved(vector_score=0.5, text_score=None)]
 
-    assert passes_retrieval_confidence(retrieved, threshold=0.3) is True
+    assert _classify(retrieved) is ConfidenceTier.CONFIDENT
 
 
-def test_low_raw_vector_score_with_no_text_match_fails() -> None:
+def test_vector_score_below_the_floor_declines() -> None:
     retrieved = [_retrieved(vector_score=0.1, text_score=None)]
 
-    assert passes_retrieval_confidence(retrieved, threshold=0.3) is False
+    assert _classify(retrieved) is ConfidenceTier.DECLINE
 
 
-def test_vector_score_exactly_at_threshold_passes() -> None:
+def test_vector_score_between_floor_and_threshold_is_low_confidence() -> None:
+    retrieved = [_retrieved(vector_score=0.2, text_score=None)]
+
+    assert _classify(retrieved) is ConfidenceTier.LOW_CONFIDENCE
+
+
+def test_vector_score_exactly_at_the_floor_is_low_confidence() -> None:
+    retrieved = [_retrieved(vector_score=0.15, text_score=None)]
+
+    assert _classify(retrieved) is ConfidenceTier.LOW_CONFIDENCE
+
+
+def test_vector_score_exactly_at_threshold_is_confident() -> None:
     retrieved = [_retrieved(vector_score=0.3, text_score=None)]
 
-    assert passes_retrieval_confidence(retrieved, threshold=0.3) is True
+    assert _classify(retrieved) is ConfidenceTier.CONFIDENT
 
 
 def test_best_of_several_candidates_determines_the_outcome() -> None:
@@ -96,4 +113,4 @@ def test_best_of_several_candidates_determines_the_outcome() -> None:
         _retrieved(vector_score=0.1, text_score=None),
     ]
 
-    assert passes_retrieval_confidence(retrieved, threshold=0.3) is True
+    assert _classify(retrieved) is ConfidenceTier.CONFIDENT

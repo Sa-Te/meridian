@@ -423,6 +423,7 @@ is the condensed version.
 | 0014 | Hand-rolled glass/neumorphic component library, plain client-side fetch, no generic data-fetching hook    | Matches CLAUDE.md's design language exactly, at less effort than adapting a general-purpose library; a generic hook couldn't satisfy this toolchain's strict hook-dependency lint rule    |
 | 0015 | Coverage tooling, a real `coverage.py`/greenlet fix, fail-fast CI ordering                                | A misconfigured coverage tool was reporting untested code that was actually fully tested — found and fixed before writing a single new test                                               |
 | 0016 | Eval-suite gate moved off the per-push pipeline; an in-process eval-run cache                             | The gate's real Gemini cost, previously accepted per-push, actually exhausted a free-tier daily quota once "per push" meant "every commit on every branch"                                |
+| 0017 | Three-tier retrieval confidence (confident / low-confidence / decline), replacing a binary pass/fail       | A weak-but-plausible match and "nothing grounded at all" were collapsing into the same outright decline; the middle tier still answers, just flagged                                     |
 
 ---
 

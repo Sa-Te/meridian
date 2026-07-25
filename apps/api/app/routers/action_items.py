@@ -24,6 +24,7 @@ async def list_action_items(
             text=item.text,
             owner=item.owner,
             due_date=item.due_date,
+            completed_at=item.completed_at,
             source_citation=build_citation(item.source_chunk),
             confidence=item.confidence,
             status=item.status,
